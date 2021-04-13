@@ -5,10 +5,10 @@
         <span class="text-2xl font-semibold leading-none">{{ config('app.name') }}</span>
       </a>
       <nav class="flex flex-wrap items-center mb-5 text-base md:mb-0 md:ml-10 space-x-8">
-        <a href="{{ route('home') }}" class="font-medium text-gray-900">首页</a>
-        <a href="{{ route('subjects.index') }}" class="font-medium text-gray-600 hover:text-gray-900">题库</a>
-        <a href="#" class="font-medium text-gray-600 hover:text-gray-900">资讯</a>
-        <a href="#" class="font-medium text-gray-600 hover:text-gray-900">关于我们</a>
+        <a href="{{ route('home') }}" class="text-gray-900 font-semibold">首页</a>
+        <a href="{{ route('subjects.index') }}" class="font-medium hover:text-gray-900">题库</a>
+        <a href="#" class="font-medium hover:text-gray-900">资讯</a>
+        <a href="#" class="font-medium hover:text-gray-900">关于我们</a>
       </nav>
     </div>
 

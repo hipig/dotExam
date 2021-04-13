@@ -13,8 +13,8 @@ class Subject extends Model
     const TRAIT_SPECIAL = 'special';
     const TRAIT_COMMON = 'common';
     public static $traitMap = [
-        self::TRAIT_SPECIAL => '专业',
-        self::TRAIT_COMMON => '公共',
+        self::TRAIT_SPECIAL => '专业科目',
+        self::TRAIT_COMMON => '公共科目',
     ];
 
     protected $fillable = [

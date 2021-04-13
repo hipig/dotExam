@@ -12,7 +12,7 @@
               @foreach($subject->_children as $childrenSubject)
                 <div class="w-1/6 px-3">
                   <div class="shadow rounded-lg w-full bg-white overflow-hidden block mb-6 relative transform duration-300 hover:-translate-y-1 hover:shadow-lg">
-                    <a href="#" class="flex flex-col items-center p-5">
+                    <a href="{{ route('subjects.show', $childrenSubject) }}" class="flex flex-col items-center p-5">
                       <x-heroicon-o-academic-cap class="w-8 h-8 text-indigo-500"></x-heroicon-o-academic-cap>
                       <span class="mt-2 truncate">{{ $childrenSubject->title }}</span>
                     </a>

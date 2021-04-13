@@ -17,3 +17,5 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [Controllers\HomeController::class, 'index'])->name('home');
 
 Route::get('subjects', [Controllers\SubjectsController::class, 'index'])->name('subjects.index');
+
+Route::get('subjects/{parentSubject}/{subject?}/{paperType?}', [Controllers\SubjectsController::class, 'show'])->name('subjects.show');
