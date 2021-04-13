@@ -1,0 +1,137 @@
+[
+    {
+        "title": "会计",
+        "name": "kj",
+        "children": [
+            {
+                "title": "初级经济师",
+                "name": "cjjjs",
+                "children": [
+                    {
+                        "title": "初级经济基础知识",
+                        "name": "cjjjjczs",
+                        "trait": "special"
+                    },
+                    {
+                        "title": "初级财政税收",
+                        "name": "cjczss",
+                        "trait": "special"
+                    },
+                    {
+                        "title": "初级金融",
+                        "name": "cjjr",
+                        "trait": "special"
+                    },
+                    {
+                        "title": "初级人力资源",
+                        "name": "cjrlzy",
+                        "trait": "special"
+                    },
+                    {
+                        "title": "初级工商管理",
+                        "name": "cjgsgl",
+                        "trait": "special"
+                    },
+                    {
+                        "title": "初级建筑经济",
+                        "name": "cjjzjj",
+                        "trait": "special"
+                    },
+                    {
+                        "title": "初级房地产",
+                        "name": "cjfdc",
+                        "trait": "special"
+                    }
+                ]
+            },
+            {
+                "title": "中级经济师",
+                "name": "zjjjs",
+                "children": [
+                    {
+                        "title": "中级经济基础",
+                        "name": "zjjjjc",
+                        "trait": "special"
+                    },
+                    {
+                        "title": "中级工商管理",
+                        "name": "zjgsgl",
+                        "trait": "special"
+                    },
+                    {
+                        "title": "中级邮电经济",
+                        "name": "zjydjj",
+                        "trait": "special"
+                    },
+                    {
+                        "title": "中级金融专业",
+                        "name": "zjjrzy",
+                        "trait": "special"
+                    },
+                    {
+                        "title": "中级财政税收",
+                        "name": "zjczss",
+                        "trait": "special"
+                    },
+                    {
+                        "title": "中级保险专业",
+                        "name": "zjbxzy",
+                        "trait": "special"
+                    }
+                ]
+            },
+            {
+                "title": "初级会计师",
+                "name": "cjkjs",
+                "children": []
+            },
+            {
+                "title": "中级会计师",
+                "name": "zjkjs",
+                "children": []
+            },
+            {
+                "title": "初级统计师",
+                "name": "cjtjs",
+                "children": []
+            },
+            {
+                "title": "中级统计师",
+                "name": "zjtjs",
+                "children": []
+            },
+            {
+                "title": "注册会计师CPA",
+                "name": "zckjscpa",
+                "children": []
+            },
+            {
+                "title": "税务师",
+                "name": "sws",
+                "children": []
+            }
+        ]
+    },
+    {
+        "title": "建筑类",
+        "name": "jzl",
+        "children": [
+            {
+                "title": "一级建造师",
+                "name": "yjjzs"
+            },
+            {
+                "title": "一级消防工程师",
+                "name": "yjxfgcs"
+            },
+            {
+                "title": "二级建造师",
+                "name": "ejjzs"
+            },
+            {
+                "title": "一级造价工程师",
+                "name": "yjzjgcs"
+            }
+        ]
+    }
+]
