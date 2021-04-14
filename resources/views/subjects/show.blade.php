@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', $parentSubject->title)
+@section('title', "{$parentSubject->title} - {$paperTypeMap[$paperType]}")
 
 @section('content')
   <div class="py-5 px-4">
@@ -58,40 +58,47 @@
           </div>
           <div class="flex justify-center">
             <div class="flex space-x-20">
-              <a href="{{ route('subjects.show', ['parentSubject' => $parentSubject, 'subject' => $subject, 'paperType' => 'chapter']) }}" class="flex items-center h-16 text-lg cursor-pointer border-b-2 {{ $paperType === 'chapter' ? 'text-indigo-500 border-indigo-500 tab-active' : 'border-transparent' }}">章节练习</a>
-              <a href="{{ route('subjects.show', ['parentSubject' => $parentSubject, 'subject' => $subject, 'paperType' => 'mock']) }}" class="flex items-center h-16 text-lg cursor-pointer border-b-2 {{ $paperType === 'mock' ? 'text-indigo-500 border-indigo-500 tab-active' : 'border-transparent' }}">模拟考试</a>
-              <a href="{{ route('subjects.show', ['parentSubject' => $parentSubject, 'subject' => $subject, 'paperType' => 'old']) }}" class="flex items-center h-16 text-lg cursor-pointer border-b-2 {{ $paperType === 'old' ? 'text-indigo-500 border-indigo-500 tab-active' : 'border-transparent' }}">历年真题</a>
-              <a href="{{ route('subjects.show', ['parentSubject' => $parentSubject, 'subject' => $subject, 'paperType' => 'daily']) }}" class="flex items-center h-16 text-lg cursor-pointer border-b-2 {{ $paperType === 'daily' ? 'text-indigo-500 border-indigo-500 tab-active' : 'border-transparent' }}">每日一练</a>
+              @foreach($paperTypeMap as $type => $title)
+                <a href="{{ route('subjects.show', ['parentSubject' => $parentSubject, 'subject' => $subject, 'paperType' => $type]) }}" class="flex items-center h-16 text-lg cursor-pointer border-b-2 {{ $paperType === $type ? 'text-indigo-500 border-indigo-500 tab-active' : 'border-transparent' }}">{{ $title }}</a>
+              @endforeach
             </div>
           </div>
         </div>
-        <div class="mt-5 flex space-x-5">
-          <div class="w-48">
-            <div class="bg-white shadow rounded-lg py-5 px-2">
-              <div class="flex flex-col space-y-5">
-                <div class="pl-3 leading-tight truncate cursor-pointer border-l-4 text-indigo-500 border-indigo-500">Soluta expedita alias tempore totam et eius.</div>
+        <div class="mt-5">
+          <div class="flex space-x-5">
+            <div class="w-48">
+              <div class="bg-white shadow rounded-lg py-5 px-2">
+                <div class="flex flex-col space-y-5">
+                  <div class="pl-3 leading-tight truncate cursor-pointer border-l-4 text-indigo-500 border-indigo-500">Soluta expedita alias tempore totam et eius.</div>
+                </div>
               </div>
             </div>
-          </div>
-          <div class="flex-1 min-w-0">
-            <div class="bg-white shadow rounded-lg">
-              <div class="flex flex-col">
-                <div class="flex items-center py-2 text-gray-400">
-                  <div class="w-2/3 px-5"><span class="ml-8">名称</span></div>
-                  <div class="w-1/3 px-5">进度</div>
-                </div>
+            <div class="flex-1 min-w-0">
+              <div class="bg-white shadow rounded-lg">
                 <div class="flex flex-col">
-                  <div class="flex items-center py-4 border-t border-gray-100">
-                    <div class="w-2/3 flex items-center px-5">
-                      <div class="mr-2">
-                        <x-heroicon-o-plus-circle class="w-6 h-6 text-indigo-500 cursor-pointer"></x-heroicon-o-plus-circle>
+                  <div class="flex items-center py-2 text-gray-400">
+                    <div class="w-2/3 px-5"><span class="ml-8">名称</span></div>
+                    <div class="w-1/3 px-5">进度</div>
+                  </div>
+                  <div class="flex flex-col">
+                    @foreach($papers as $paper)
+                      <div class="flex items-center py-4 border-t border-gray-100">
+                        <div class="w-2/3 flex items-center px-5">
+                          <div class="mr-2">
+                            @if($paper->children->isNotEmpty())
+                              <x-heroicon-o-plus-circle class="w-6 h-6 text-indigo-500 cursor-pointer"></x-heroicon-o-plus-circle>
+                            @else
+                              <x-heroicon-o-minus-circle class="w-6 h-6 text-gray-400"></x-heroicon-o-minus-circle>
+                            @endif
+                          </div>
+                          <div class="text-base truncate">{{ $paper->title }}</div>
+                        </div>
+                        <div class="w-1/3 flex items-center justify-between px-5">
+                          <div class="text-gray-400"><span class="text-indigo-500">0</span>/{{ $paper->total_count }}</div>
+                          <button type="button" class="px-3 py-1 text-sm flex items-center justify-center border-2 border-indigo-500 text-indigo-500 bg-indigo-50 rounded focus:outline-none">马上练习</button>
+                        </div>
                       </div>
-                      <div class="text-base truncate">Soluta expedita alias tempore totam et eius.</div>
-                    </div>
-                    <div class="w-1/3 flex items-center justify-between px-5">
-                      <div class="text-gray-400"><span class="text-indigo-500">0</span>/14</div>
-                      <button type="button" class="px-3 py-1 text-sm flex items-center justify-center border-2 border-indigo-500 text-indigo-500 bg-indigo-50 rounded focus:outline-none">马上练习</button>
-                    </div>
+                    @endforeach
                   </div>
                 </div>
               </div>

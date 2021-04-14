@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Traits\OrderIndexScopeTrait;
 use App\Models\Traits\StatusScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Subject extends Model
 {
-    use HasFactory, StatusScope;
+    use HasFactory, StatusScope, OrderIndexScopeTrait;
 
     const TRAIT_SPECIAL = 'special';
     const TRAIT_COMMON = 'common';
@@ -63,6 +64,31 @@ class Subject extends Model
     public function children()
     {
         return $this->hasMany(Subject::class, 'parent_id');
+    }
+
+    public function papers()
+    {
+        return $this->hasMany(Paper::class, 'subject_id');
+    }
+
+    public function chapterPapers()
+    {
+        return $this->hasMany(Paper::class, 'subject_id')->where('type', Paper::TYPE_CHAPTER);
+    }
+
+    public function mockPapers()
+    {
+        return $this->hasMany(Paper::class, 'subject_id')->where('type', Paper::TYPE_MOCK);
+    }
+
+    public function oldPapers()
+    {
+        return $this->hasMany(Paper::class, 'subject_id')->where('type', Paper::TYPE_OLD);
+    }
+
+    public function dailyPapers()
+    {
+        return $this->hasMany(Paper::class, 'subject_id')->where('type', Paper::TYPE_DAILY);
     }
 
     public function getChildrenGroupsAttribute()
