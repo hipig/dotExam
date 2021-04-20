@@ -49,12 +49,16 @@ class SubjectsController extends Controller
                     ->get();
                 break;
             case Paper::TYPE_MOCK:
-
+                $papers = $subject->mockPapers;
                 break;
             case Paper::TYPE_OLD:
-
+                $papers = $subject->oldPapers;
                 break;
             case Paper::TYPE_DAILY:
+                $papers = $subject->dailyPapers()
+                    ->with('topThreeItems')
+                    ->latest()
+                    ->get();
 
                 break;
         }

@@ -68,6 +68,10 @@
             @case(\App\Models\Paper::TYPE_CHAPTER)
               @include('subjects.types.chapter')
             @break
+            @case(\App\Models\Paper::TYPE_MOCK)
+            @case(\App\Models\Paper::TYPE_OLD)
+              @include('subjects.types.paper')
+            @break
           @endswitch
         </div>
       </div>

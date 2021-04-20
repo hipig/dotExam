@@ -82,6 +82,11 @@ class Paper extends Model
         return $this->hasManyThrough(PaperItem::class, Paper::class, 'parent_id', 'paper_id');
     }
 
+    public function topThreeItems()
+    {
+        return $this->hasMany(PaperItem::class, 'paper_id')->orderBy('question_type')->limit(3);
+    }
+
     public function getHasChildrenAttribute()
     {
         return $this->newModelQuery()->where('parent_id', $this->id)->exists();
