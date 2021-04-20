@@ -33,7 +33,20 @@ class Paper extends Model
         self::FILTER_TYPE_ERROR => '错题',
     ];
 
-
+    const FILTER_SIZE_5 = 5;
+    const FILTER_SIZE_10 = 10;
+    const FILTER_SIZE_20 = 20;
+    const FILTER_SIZE_30 = 30;
+    const FILTER_SIZE_50 = 50;
+    const FILTER_SIZE_100 = 100;
+    public static $filterSizeMap = [
+        self::FILTER_SIZE_5 => 5,
+        self::FILTER_SIZE_10 => 10,
+        self::FILTER_SIZE_20 => 20,
+        self::FILTER_SIZE_30 => 30,
+        self::FILTER_SIZE_50 => 50,
+        self::FILTER_SIZE_100 => 100,
+    ];
 
     protected $fillable = [
         'subject_id',
@@ -116,6 +129,7 @@ class Paper extends Model
             Question::MULTI_SELECT => (clone $query)->where('question_type', Question::MULTI_SELECT)->count(),
             Question::JUDGE_SELECT => (clone $query)->where('question_type', Question::JUDGE_SELECT)->count(),
             Question::FILL_BLANK => (clone $query)->where('question_type', Question::FILL_BLANK)->count(),
+            Question::SHORT_ANSWER => (clone $query)->where('question_type', Question::SHORT_ANSWER)->count(),
         ];
     }
 }

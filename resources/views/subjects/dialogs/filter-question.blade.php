@@ -1,4 +1,4 @@
-<div x-data="dialogContainer()" @start-exam.window="startExam($event.detail.show, $event.detail.id)" x-show="show" class="fixed z-10 inset-0 overflow-y-auto">
+<div x-data="dialogContainer()" @start-exam.window="startExam($event.detail.show, $event.detail.totalitiesUrl)" x-show="show" class="fixed z-10 inset-0 overflow-y-auto">
   <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
     <div x-show="open"
          x-transition:enter="ease-out duration-300"
@@ -36,62 +36,37 @@
           <div class="flex flex-col">
             <h3 class="text-gray-400 mb-2">类型</h3>
             <div class="flex flex-wrap -mx-3">
-              <div class="w-1/6 px-3">
-                <div class="flex items-center justify-center py-2 mb-3 rounded text-base cursor-pointer bg-indigo-500 text-white">全部</div>
-              </div><div class="w-1/6 px-3">
-                <div class="flex items-center justify-center py-2 mb-3 rounded text-base cursor-pointer bg-gray-100">未做</div>
-              </div>
-              <div class="w-1/6 px-3">
-                <div class="flex items-center justify-center py-2 mb-3 rounded text-base cursor-pointer bg-gray-100">已做</div>
-              </div>
-              <div class="w-1/6 px-3">
-                <div class="flex items-center justify-center py-2 mb-3 rounded text-base cursor-pointer bg-gray-100">错题</div>
-              </div>
+              @foreach(\App\Models\Paper::$filterTypeMap as $key => $item)
+                <div class="w-1/6 px-3">
+                  <div class="flex items-center justify-center py-2 mb-3 rounded text-base cursor-pointer" :class="[range === '{{ $key }}' ? 'bg-indigo-500 text-white' : 'bg-gray-100']" x-on:click="switchRange('{{ $key }}')">{{ $item }}</div>
+                </div>
+              @endforeach
+              <input type="hidden" name="range" x-model="range">
             </div>
           </div>
           <div class="flex flex-col">
             <h3 class="text-gray-400 mb-2">题型</h3>
             <div class="flex flex-wrap -mx-3">
               <div class="w-1/6 px-3">
-                <div class="flex items-center justify-center py-2 mb-3 rounded text-base cursor-pointer bg-indigo-500 text-white">全部（0）</div>
+                <div class="flex items-center justify-center py-2 mb-3 rounded text-base cursor-pointer" :class="[type === 0 ? 'bg-indigo-500 text-white' : 'bg-gray-100']" x-on:click="switchType(0)">全部（<span x-text="totalities[0] || 0"></span>）</div>
               </div>
-              <div class="w-1/6 px-3">
-                <div class="flex items-center justify-center py-2 mb-3 rounded text-base cursor-pointer bg-gray-100">单选题（0）</div>
-              </div>
-              <div class="w-1/6 px-3">
-                <div class="flex items-center justify-center py-2 mb-3 rounded text-base cursor-pointer bg-gray-100">多选题（0）</div>
-              </div>
-              <div class="w-1/6 px-3">
-                <div class="flex items-center justify-center py-2 mb-3 rounded text-base cursor-pointer bg-gray-100">判断题（0）</div>
-              </div>
-              <div class="w-1/6 px-3">
-                <div class="flex items-center justify-center py-2 mb-3 rounded text-base cursor-pointer bg-gray-100">填空题（0）</div>
-              </div>
-              <div class="w-1/6 px-3">
-                <div class="flex items-center justify-center py-2 mb-3 rounded text-base cursor-pointer bg-gray-100">问答题（0）</div>
-              </div>
+              @foreach(\App\Models\Question::$typeMap as $key => $item)
+                <div class="w-1/6 px-3">
+                  <div class="flex items-center justify-center py-2 mb-3 rounded text-base cursor-pointer" :class="[type === {{ $key }} ? 'bg-indigo-500 text-white' : 'bg-gray-100']" x-on:click="switchType({{ $key }})">{{ $item }}（<span x-text="totalities[{{ $key }}] || 0"></span>）</div>
+                </div>
+              @endforeach
+              <input type="hidden" name="range" x-model="type">
             </div>
           </div>
           <div class="flex flex-col">
             <h3 class="text-gray-400 mb-2">数量</h3>
             <div class="flex flex-wrap -mx-3">
-              <div class="w-1/6 px-3">
-                <div class="flex items-center justify-center py-2 mb-3 rounded text-base cursor-pointer bg-indigo-500 text-white">5</div>
-              </div>
-              <div class="w-1/6 px-3">
-                <div class="flex items-center justify-center py-2 mb-3 rounded text-base cursor-pointer bg-gray-100">10</div>
-              </div>
-              <div class="w-1/6 px-3">
-                <div class="flex items-center justify-center py-2 mb-3 rounded text-base cursor-pointer bg-gray-100">20</div>
-              </div>
-              <div class="w-1/6 px-3">
-                <div class="flex items-center justify-center py-2 mb-3 rounded text-base cursor-pointer bg-gray-100">30</div>
-              </div>
-              <div class="w-1/6 px-3">
-                <div class="flex items-center justify-center py-2 mb-3 rounded text-base cursor-pointer bg-gray-100">50</div>
-              </div>
-              <div class="w-1/6 px-3"><div class="flex items-center justify-center py-2 mb-3 rounded text-base cursor-pointer bg-gray-100">100</div>
-              </div>
+              @foreach(\App\Models\Paper::$filterSizeMap as $item)
+                <div class="w-1/6 px-3">
+                  <div class="flex items-center justify-center py-2 mb-3 rounded text-base cursor-pointer" :class="[size === {{ $item }} ? 'bg-indigo-500 text-white' : 'bg-gray-100']" x-on:click="switchSize({{ $item }})">{{ $item }}</div>
+                </div>
+              @endforeach
+              <input type="hidden" name="range" x-model="size">
             </div>
           </div>
         </div>
@@ -110,12 +85,32 @@
   function dialogContainer() {
     return {
       show: false,
-      id: null,
+      storeUrl: null,
+      totalitiesUrl: null,
+      range: 'all',
+      type: 0,
+      size: 5,
+      totalities: {},
 
-      startExam(show, id) {
+      startExam(show, totalitiesUrl) {
         this.show = !!show
-        this.id = id
+        this.totalitiesUrl = totalitiesUrl
+        this.switchRange('all')
       },
+      switchRange(range) {
+        this.range = range
+
+        axios.get(this.totalitiesUrl, {range: range})
+          .then(res => {
+            this.totalities = res.data
+          })
+      },
+      switchType(type) {
+        this.type = type
+      },
+      switchSize(size) {
+        this.size = size
+      }
     }
   }
 </script>

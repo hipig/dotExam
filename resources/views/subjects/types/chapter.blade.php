@@ -35,7 +35,7 @@
                 <div class="w-1/3">
                   <div class="flex items-center justify-between px-5">
                     <div class="text-gray-400"><span class="text-indigo-500">0</span>/{{ $paper->total_count }}</div>
-                    <button type="button" x-data x-on:click="$dispatch('start-exam', {show: true, id: {{ $paper->id }}})" class="px-3 py-1 text-sm flex items-center justify-center border-2 border-indigo-500 text-indigo-500 bg-indigo-50 rounded focus:outline-none">马上练习</button>
+                    <button type="button" x-data x-on:click="$dispatch('start-exam', {show: true, storeUrl: '#', totalitiesUrl: '{{ route('papers.getTotalities', $paper) }}'})" class="px-3 py-1 text-sm flex items-center justify-center border-2 border-indigo-500 text-indigo-500 bg-indigo-50 rounded focus:outline-none">马上练习</button>
                   </div>
                 </div>
               </div>
@@ -53,7 +53,7 @@
                     <div class="w-1/3">
                       <div class="flex items-center justify-between px-5">
                         <div class="text-gray-400"><span class="text-indigo-500">0</span>/{{ $childrenPaper->total_count }}</div>
-                        <button type="button" x-data x-on:click="$dispatch('start-exam', {show: true, id: {{ $childrenPaper->id }}})" class="px-3 py-1 text-sm flex items-center justify-center border-2 border-indigo-500 text-indigo-500 bg-indigo-50 rounded focus:outline-none">马上练习</button>
+                        <button type="button" x-data x-on:click="$dispatch('start-exam', {show: true, storeUrl: '#', totalitiesUrl: '{{ route('papers.getTotalities', $childrenPaper) }}'})" class="px-3 py-1 text-sm flex items-center justify-center border-2 border-indigo-500 text-indigo-500 bg-indigo-50 rounded focus:outline-none">马上练习</button>
                       </div>
                     </div>
                   </div>
