@@ -22,6 +22,18 @@ class Paper extends Model
         self::TYPE_DAILY => '每日一练',
     ];
 
+    const FILTER_TYPE_ALL = 'all';
+    const FILTER_TYPE_UNDONE = 'undone';
+    const FILTER_TYPE_DONE = 'done';
+    const FILTER_TYPE_ERROR = 'error';
+    public static $filterTypeMap = [
+        self::FILTER_TYPE_ALL => '全部',
+        self::FILTER_TYPE_UNDONE => '未做',
+        self::FILTER_TYPE_DONE => '已做',
+        self::FILTER_TYPE_ERROR => '错题',
+    ];
+
+
 
     protected $fillable = [
         'subject_id',
@@ -63,5 +75,42 @@ class Paper extends Model
     public function items()
     {
         return $this->hasMany(PaperItem::class, 'paper_id');
+    }
+
+    public function childrenItems()
+    {
+        return $this->hasManyThrough(PaperItem::class, Paper::class, 'parent_id', 'paper_id');
+    }
+
+    public function getHasChildrenAttribute()
+    {
+        return $this->newModelQuery()->where('parent_id', $this->id)->exists();
+    }
+
+    public function getTotalities($filterType = 'all')
+    {
+        $query = $this->has_children ? $this->childrenItems() : $this->items();
+        switch ($filterType) {
+            case 'all':
+
+                break;
+            case 'undone':
+
+                break;
+            case 'done':
+
+                break;
+            case 'error':
+
+                break;
+        }
+
+        return [
+            0 => (clone $query)->count(),
+            Question::SINGLE_SELECT => (clone $query)->where('question_type', Question::SINGLE_SELECT)->count(),
+            Question::MULTI_SELECT => (clone $query)->where('question_type', Question::MULTI_SELECT)->count(),
+            Question::JUDGE_SELECT => (clone $query)->where('question_type', Question::JUDGE_SELECT)->count(),
+            Question::FILL_BLANK => (clone $query)->where('question_type', Question::FILL_BLANK)->count(),
+        ];
     }
 }

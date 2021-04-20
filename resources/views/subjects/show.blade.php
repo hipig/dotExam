@@ -19,12 +19,11 @@
                 <x-heroicon-o-academic-cap class="w-8 h-8 text-indigo-500"></x-heroicon-o-academic-cap>
                 <h3 class="text-xl ml-1">{{ $parentSubject->title }}</h3>
               </div>
-              <div class="ml-5" x-data="{ open: false }" x-cloak>
-                <button x-on:click="open = !open" type="button" class="border border-indigo-200 text-indigo-500 rounded-full px-2 py-0.5 flex items-center text-xs focus:outline-none">
+              <div class="ml-5" x-data>
+                <button x-on:click="$dispatch('choose-subject', true)" type="button" class="border border-indigo-200 text-indigo-500 rounded-full px-2 py-0.5 flex items-center text-xs focus:outline-none">
                   <span class="mr-1">切换考试</span>
                   <x-heroicon-o-chevron-down class="w-4 h-4"></x-heroicon-o-chevron-down>
                 </button>
-                @include('subjects.choose')
               </div>
             </div>
             <div class="flex space-x-10">
@@ -64,48 +63,16 @@
             </div>
           </div>
         </div>
-        <div class="mt-5">
-          <div class="flex space-x-5">
-            <div class="w-48">
-              <div class="bg-white shadow rounded-lg py-5 px-2">
-                <div class="flex flex-col space-y-5">
-                  <div class="pl-3 leading-tight truncate cursor-pointer border-l-4 text-indigo-500 border-indigo-500">Soluta expedita alias tempore totam et eius.</div>
-                </div>
-              </div>
-            </div>
-            <div class="flex-1 min-w-0">
-              <div class="bg-white shadow rounded-lg">
-                <div class="flex flex-col">
-                  <div class="flex items-center py-2 text-gray-400">
-                    <div class="w-2/3 px-5"><span class="ml-8">名称</span></div>
-                    <div class="w-1/3 px-5">进度</div>
-                  </div>
-                  <div class="flex flex-col">
-                    @foreach($papers as $paper)
-                      <div class="flex items-center py-4 border-t border-gray-100">
-                        <div class="w-2/3 flex items-center px-5">
-                          <div class="mr-2">
-                            @if($paper->children->isNotEmpty())
-                              <x-heroicon-o-plus-circle class="w-6 h-6 text-indigo-500 cursor-pointer"></x-heroicon-o-plus-circle>
-                            @else
-                              <x-heroicon-o-minus-circle class="w-6 h-6 text-gray-400"></x-heroicon-o-minus-circle>
-                            @endif
-                          </div>
-                          <div class="text-base truncate">{{ $paper->title }}</div>
-                        </div>
-                        <div class="w-1/3 flex items-center justify-between px-5">
-                          <div class="text-gray-400"><span class="text-indigo-500">0</span>/{{ $paper->total_count }}</div>
-                          <button type="button" class="px-3 py-1 text-sm flex items-center justify-center border-2 border-indigo-500 text-indigo-500 bg-indigo-50 rounded focus:outline-none">马上练习</button>
-                        </div>
-                      </div>
-                    @endforeach
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+        <div class="my-5">
+          @switch($paperType)
+            @case(\App\Models\Paper::TYPE_CHAPTER)
+              @include('subjects.types.chapter')
+            @break
+          @endswitch
         </div>
       </div>
     </div>
   </div>
+  @include('subjects.dialogs.choose-subject')
+  @include('subjects.dialogs.filter-question')
 @endsection

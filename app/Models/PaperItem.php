@@ -29,4 +29,9 @@ class PaperItem extends Model
     {
         return $this->belongsTo(PaperSection::class, 'section_id');
     }
+
+    public function question()
+    {
+        return $this->belongsTo(Question::class, 'question_id');
+    }
 }

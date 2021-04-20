@@ -13,6 +13,7 @@
 
 <!-- Styles -->
   <link rel="stylesheet" href="{{ mix('css/app.css') }}">
+  @yield('css')
 
   <!-- Scripts -->
   <script src="{{ mix('js/app.js') }}" defer></script>
@@ -24,5 +25,6 @@
 
 @yield('body')
 
+@yield('js')
 </body>
 </html>
