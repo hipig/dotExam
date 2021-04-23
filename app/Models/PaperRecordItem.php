@@ -9,6 +9,20 @@ class PaperRecordItem extends Model
 {
     use HasFactory;
 
+    const CORRECT_TYPE_ERROR = -1;
+    const CORRECT_TYPE_ALL_RIGHT = 1;
+    const CORRECT_TYPE_PART_RIGHT = 2;
+    public static $correctTypeMap = [
+        self::CORRECT_TYPE_ERROR => '错误',
+        self::CORRECT_TYPE_ALL_RIGHT => '正确',
+        self::CORRECT_TYPE_PART_RIGHT => '部分正确',
+    ];
+
+    public static $rightTypeMap = [
+        self::CORRECT_TYPE_ALL_RIGHT,
+        self::CORRECT_TYPE_PART_RIGHT,
+    ];
+
     protected $fillable = [
         'user_id',
         'record_id',
@@ -18,8 +32,8 @@ class PaperRecordItem extends Model
         'question_id',
         'question_type',
         'answer',
-        'is_right',
         'score',
+        'check_remark',
     ];
 
     public function user()
@@ -52,17 +66,30 @@ class PaperRecordItem extends Model
         return $this->belongsTo(Question::class, 'question_id');
     }
 
-
-    public function checkAnswer($answer)
+    public function setAnswerAttribute($value)
     {
-        $correctAnswer = $this->question->answer;
+        $this->attributes['answer'] = is_array($value) ? json_encode($value) : $value;
+    }
+
+    public function getAnswerAttribute($value)
+    {
+        return in_array($this->type, Question::$needDecodeTypeMap) ? json_decode($value) : $value;
+    }
+
+    public function getAnswerTextAttribute($value)
+    {
+        return in_array($this->type, Question::$needDecodeTypeMap) ? implode(', ', $this->answer) : $this->answer;
+    }
+
+    public static function checkAnswer($answer, $correctAnswer, $type)
+    {
         $result = 0;
-        switch ($this->question_type) {
-            case self::SINGLE_SELECT:
-            case self::JUDGE_SELECT:
-                $result = hash_equals($answer, $correctAnswer);
+        switch ($type) {
+            case Question::SINGLE_SELECT:
+            case Question::JUDGE_SELECT:
+                $result = hash_equals($answer, $correctAnswer) ? self::CORRECT_TYPE_ALL_RIGHT : self::CORRECT_TYPE_ERROR;
                 break;
-            case self::MULTI_SELECT:
+            case Question::MULTI_SELECT:
                 $answerMap = is_array($answer) ? $answer : explode(',', $answer);
                 $answerCount = count($answerMap);
                 $correctAnswerCount = count($correctAnswer);
@@ -72,25 +99,18 @@ class PaperRecordItem extends Model
                 }
                 // 超过正确答案个数直接判定错误
                 if ($answerCount > $correctAnswerCount) {
-                    $result = -1;
+                    $result = self::CORRECT_TYPE_ERROR;
                     break;
                 }
 
                 // 完全匹配
-                $correctCount = 0;
-                $result = 1;
+                $result = $answerCount < $correctAnswerCount ? self::CORRECT_TYPE_PART_RIGHT : self::CORRECT_TYPE_ALL_RIGHT;
                 foreach ($answerMap as $key => $value) {
                     if (!in_array($value, $correctAnswer)) {
-                        $result = -1;
-                        break;
+                        $result = self::CORRECT_TYPE_ERROR;
+                        break 2;
                     }
-                    $correctCount++;
                 }
-
-                if ($correctCount < $correctAnswerCount) {
-                    $result = 2;
-                }
-
                 break;
         }
 

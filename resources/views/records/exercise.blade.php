@@ -45,7 +45,14 @@
                     <div class="flex flex-col space-y-2">
                       @foreach($item->question->option as $key => $label)
                         <label class="inline-flex items-center" :class="[isAnswered ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer']">
-                          <input type="radio" name="answer" value="{{ $key }}" x-model="selfAnswer" class="w-5 h-5 border-2 border-gray-400" :class="[isAnswered ? (isRight ? 'text-green-500 focus:shadow-outline-green' : 'text-red-500 focus:shadow-outline-red') : 'text-indigo-500 focus:ring-indigo-500']" :disabled="isAnswered" x-on:change="submit">
+                          <input type="radio"
+                                 name="answer"
+                                 value="{{ $key }}"
+                                 x-model="selfAnswer"
+                                 class="w-5 h-5 border-2 border-gray-300"
+                                 :class="[isAnswered ? (isRight ? 'text-green-500 focus:shadow-outline-green' : 'text-red-500 focus:shadow-outline-red') : 'text-indigo-500 focus:ring-indigo-500']"
+                                 :disabled="isAnswered"
+                                 x-on:change="submit('{{ route('paperRecords.items.store', ['record' => $record, 'paperItem' => $item]) }}')">
                           <span class="ml-3">{{ $label }}</span>
                         </label>
                       @endforeach
@@ -69,7 +76,7 @@
                           <template x-if="isAnswered && !isRight">
                             <div class="mr-10 py-1 flex {{ $item->question_type === \App\Models\Question::FILL_BLANK ? 'items-baseline' : 'items-center' }}">
                               <span class="text-gray-500">你的答案：</span>
-                              <span class="flex-1 text-base font-semibold leading-tight" x-text="selfAnswer"></span>
+                              <span class="flex-1 text-base font-semibold leading-tight" x-text="selfAnswerText"></span>
                             </div>
                           </template>
                         </div>
@@ -127,9 +134,17 @@
         selfAnswer: null,
         selfAnswerText: null,
 
-        submit() {
+        submit(url) {
           this.isAnswered = true
           this.showAnswer = true
+
+          this.$nextTick(_ => {
+            axios.post(url, {answer: this.selfAnswer})
+              .then(res => {
+                this.isRight = res.data.is_correct == 1
+                this.selfAnswerText = res.data.answer_text
+              })
+          })
         }
       }
     }

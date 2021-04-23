@@ -26,23 +26,23 @@ class QuestionFactory extends Factory
         switch ($type) {
             case 1:
                 $keys = ['A', 'B', 'C', 'D'];
-                for ($i = 0; $i < count($keys); $i++) {
-                    $options[$keys[$i]] = $faker->sentence;
+                foreach ($keys as $key) {
+                    $options[$key] = $faker->sentence;
                 }
                 $answer = $faker->randomElement($keys);
                 break;
             case 3:
                 $keys = ['A', 'B'];
-                for ($i = 0; $i < count($keys); $i++) {
-                    $options[$keys[$i]] = $faker->sentence;
+                foreach ($keys as $key) {
+                    $options[$key] = $faker->sentence;
                 }
                 $answer = $faker->randomElement($keys);
                 $score = 2;
                 break;
             case 2:
                 $keys = ['A', 'B', 'C', 'D', 'E'];
-                for ($i = 0; $i < count($keys); $i++) {
-                    $options[$keys[$i]] = $faker->sentence;
+                foreach ($keys as $key) {
+                    $options[$key] = $faker->sentence;
                 }
                 $answer = $faker->randomElements($keys, $faker->randomElement([2, 3]));
                 break;

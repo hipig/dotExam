@@ -2,6 +2,10 @@
 
 namespace App\Providers;
 
+use App\Events\PaperRecordItemSaved;
+use App\Events\PaperRecordSubmitted;
+use App\Listeners\RecordScoreAndError;
+use App\Listeners\UpdateRecordCountAndScore;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
@@ -17,6 +21,14 @@ class EventServiceProvider extends ServiceProvider
     protected $listen = [
         Registered::class => [
             SendEmailVerificationNotification::class,
+        ],
+
+        PaperRecordItemSaved::class => [
+            RecordScoreAndError::class,
+        ],
+
+        PaperRecordSubmitted::class => [
+            UpdateRecordCountAndScore::class,
         ],
     ];
 

@@ -54,4 +54,6 @@ Route::middleware('auth')->group(function () {
 
     Route::get('records/{record}', [Controllers\PaperRecordsController::class, 'show'])->name('paperRecords.show');
 
+    Route::post('records/{record}/{paperItem}/items', [Controllers\PaperRecordItemsController::class, 'store'])->name('paperRecords.items.store');
+
 });
