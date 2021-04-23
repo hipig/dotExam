@@ -44,7 +44,7 @@ class PaperItemFactory extends Factory
             $score = $section->item_score ?? 0;
         }
 
-        $questionIds = Question::query()->pluck('id')->toArray();
+        $questionIds = Question::query()->where('type', $questionType)->pluck('id')->toArray();
         $questionId = $faker->randomElement($questionIds);
 
         return [

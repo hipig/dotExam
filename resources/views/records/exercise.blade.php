@@ -24,7 +24,7 @@
                 </div>
               </div>
               <div class="text-base mt-4">
-                <label class="flex items-center">
+                <label class="inline-flex items-center">
                   <input type="checkbox" class="w-5 h-5 rounded text-indigo-500 border-gray-300 focus:ring-indigo-500">
                   <span class="ml-2">做对自动下一题</span>
                 </label>
@@ -39,7 +39,7 @@
                       <div class="text-indigo-500 text-lg ml-3">[{{ \App\Models\Question::$typeMap[$item->question_type] }}]</div>
                     </div>
                   </div>
-                  <div class="text-gray-900 text-lg">{{ $item->question->title }}</div>
+                  <div class="text-gray-900 text-lg">{{$item->question->id}} {{ $item->question->title }}</div>
                   @switch($item->question_type)
                     @case(\App\Models\Question::SINGLE_SELECT)
                     <div class="flex flex-col space-y-2">
@@ -58,7 +58,7 @@
                       <x-heroicon-o-eye-off class="w-6 h-6 text-gray-400 mr-1" x-show="showAnswer"></x-heroicon-o-eye-off>
                       <span class="text-gray-900 leading-none" x-text="showAnswer ? '隐藏答案' : '查看答案'"></span>
                     </button>
-                    <div x-show="showAnswer || isAnswered">
+                    <div x-show="showAnswer">
                       <template x-if="{{ $item->question_type }} != {{ \App\Models\Question::SHORT_ANSWER }}">
                         <div class="mb-5 py-2 px-5 bg-gray-100 flex leading-tight rounded {{ $item->question_type ? 'flex-col' : 'flex-wrap items-center' }}">
                           <div class="mr-10 py-1" :class="isRight ? 'font-semibold text-green-500' : 'font-semibold text-red-500'" x-show="isAnswered" x-text="isRight ? '回答正确': '回答错误'"></div>
@@ -124,10 +124,12 @@
         showAnswer: false,
         isAnswered: false,
         isRight: false,
-        selfAnswer: '',
+        selfAnswer: null,
+        selfAnswerText: null,
 
         submit() {
           this.isAnswered = true
+          this.showAnswer = true
         }
       }
     }

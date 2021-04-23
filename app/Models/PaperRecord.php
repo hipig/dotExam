@@ -31,6 +31,14 @@ class PaperRecord extends Model
         'setting'  => 'json',
     ];
 
+    protected static function boot()
+    {
+        parent::boot();
+        static::deleting(function ($model) {
+            $model->items()->delete();
+        });
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id');
