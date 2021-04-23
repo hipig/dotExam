@@ -18,7 +18,7 @@ class CreatePaperRecordsTable extends Migration
             $table->unsignedBigInteger('user_id')->comment('用户ID');
             $table->unsignedBigInteger('subject_id')->comment('科目ID');
             $table->unsignedBigInteger('paper_id')->comment('试卷ID');
-            $table->unsignedTinyInteger('type')->default(1)->comment('类型');
+            $table->string('type')->default(\App\Models\Paper::TYPE_CHAPTER)->comment('类型');
             $table->unsignedInteger('score')->default(0)->comment('得分');
             $table->unsignedInteger('total_count')->default(0)->comment('总题数');
             $table->unsignedInteger('done_count')->default(0)->comment('已做题数');

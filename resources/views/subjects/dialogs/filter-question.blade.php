@@ -1,4 +1,4 @@
-<div x-data="dialogContainer()" @start-exam.window="startExam($event.detail.show, $event.detail.totalitiesUrl)" x-show="show" class="fixed z-10 inset-0 overflow-y-auto">
+<div x-data="dialogContainer()" @start-exam.window="startExam($event.detail.show, $event.detail.totalitiesUrl, $event.detail.storeUrl)" x-show="show" class="fixed z-10 inset-0 overflow-y-auto">
   <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
     <div x-show="open"
          x-transition:enter="ease-out duration-300"
@@ -33,6 +33,13 @@
       </div>
       <div class="bg-white px-8">
         <div class="w-full space-y-5">
+          <form :action="storeUrl" method="post" x-ref="store-record-form">
+            @csrf
+            <input type="hidden" name="range" x-model="range">
+            <input type="hidden" name="type" x-model="type">
+            <input type="hidden" name="size" x-model="size">
+            <input type="hidden" name="mode" x-model="mode">
+          </form>
           <div class="flex flex-col">
             <h3 class="text-gray-400 mb-2">类型</h3>
             <div class="flex flex-wrap -mx-3">
@@ -41,7 +48,6 @@
                   <div class="flex items-center justify-center py-2 mb-3 rounded text-base cursor-pointer" :class="[range === '{{ $key }}' ? 'bg-indigo-500 text-white' : 'bg-gray-100']" x-on:click="switchRange('{{ $key }}')">{{ $item }}</div>
                 </div>
               @endforeach
-              <input type="hidden" name="range" x-model="range">
             </div>
           </div>
           <div class="flex flex-col">
@@ -55,7 +61,6 @@
                   <div class="flex items-center justify-center py-2 mb-3 rounded text-base cursor-pointer" :class="[type === {{ $key }} ? 'bg-indigo-500 text-white' : 'bg-gray-100']" x-on:click="switchType({{ $key }})">{{ $item }}（<span x-text="totalities[{{ $key }}] || 0"></span>）</div>
                 </div>
               @endforeach
-              <input type="hidden" name="range" x-model="type">
             </div>
           </div>
           <div class="flex flex-col">
@@ -66,15 +71,14 @@
                   <div class="flex items-center justify-center py-2 mb-3 rounded text-base cursor-pointer" :class="[size === {{ $item }} ? 'bg-indigo-500 text-white' : 'bg-gray-100']" x-on:click="switchSize({{ $item }})">{{ $item }}</div>
                 </div>
               @endforeach
-              <input type="hidden" name="range" x-model="size">
             </div>
           </div>
         </div>
       </div>
       <div class="py-6 px-8">
         <div class="flex items-center justify-end">
-          <button type="button" class="inline-flex py-2 px-8 text-base rounded text-white bg-gradient-to-r from-indigo-400 to-indigo-500 focus:outline-none">练习模式</button>
-          <button type="button" class="ml-6 inline-flex py-2 px-8 text-base rounded text-white bg-gradient-to-r from-yellow-400 to-yellow-500 focus:outline-none">考试模式</button>
+          <button x-on:click="start('exercise')" type="button" class="inline-flex py-2 px-8 text-base rounded text-white bg-gradient-to-r from-indigo-400 to-indigo-500 focus:outline-none">练习模式</button>
+          <button x-on:click="start('test')" type="button" class="ml-6 inline-flex py-2 px-8 text-base rounded text-white bg-gradient-to-r from-yellow-400 to-yellow-500 focus:outline-none">考试模式</button>
         </div>
       </div>
     </div>
@@ -90,11 +94,13 @@
       range: 'all',
       type: 0,
       size: 5,
+      mode: '',
       totalities: {},
 
-      startExam(show, totalitiesUrl) {
+      startExam(show, totalitiesUrl, storeUrl) {
         this.show = !!show
         this.totalitiesUrl = totalitiesUrl
+        this.storeUrl = storeUrl
         this.switchRange('all')
       },
       switchRange(range) {
@@ -110,6 +116,12 @@
       },
       switchSize(size) {
         this.size = size
+      },
+      start(mode) {
+        this.mode = mode
+        this.$nextTick(_ => {
+          this.$refs['store-record-form'].submit()
+        })
       }
     }
   }

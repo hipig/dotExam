@@ -6,6 +6,7 @@ use App\Models\Traits\OrderIndexScopeTrait;
 use App\Models\Traits\StatusScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 
 class Paper extends Model
 {
@@ -105,21 +106,20 @@ class Paper extends Model
         return $this->newModelQuery()->where('parent_id', $this->id)->exists();
     }
 
+    public function allItems()
+    {
+        return $this->has_children ? $this->childrenItems() : $this->items();
+    }
+
     public function getTotalities($filterType = 'all')
     {
-        $query = $this->has_children ? $this->childrenItems() : $this->items();
+        $query = $this->allItems();
         switch ($filterType) {
-            case 'all':
-
+            case self::FILTER_TYPE_UNDONE:
                 break;
-            case 'undone':
-
+            case self::FILTER_TYPE_DONE:
                 break;
-            case 'done':
-
-                break;
-            case 'error':
-
+            case self::FILTER_TYPE_ERROR:
                 break;
         }
 
@@ -131,5 +131,44 @@ class Paper extends Model
             Question::FILL_BLANK => (clone $query)->where('question_type', Question::FILL_BLANK)->count(),
             Question::SHORT_ANSWER => (clone $query)->where('question_type', Question::SHORT_ANSWER)->count(),
         ];
+    }
+
+    public function storeChapterRecord($range = 'all', $type = 0, $size = 5, $mode = 'exercise')
+    {
+        $bankItems = $this->allItems();
+
+        switch ($range) {
+            case self::FILTER_TYPE_UNDONE:
+                break;
+            case self::FILTER_TYPE_DONE:
+                break;
+            case self::FILTER_TYPE_ERROR:
+                break;
+        }
+
+        if ($type) {
+            $bankItems->where('paper_items.question_type', $type);
+        }
+
+        $idPluck = $bankItems->pluck('paper_items.id');
+        $count = $idPluck->count();
+        $ids = $idPluck->random($size >= $count ? $count : $size);
+
+        $setting = [
+            'paper_items' => $ids->toArray(),
+            'mode' => $mode
+        ];
+
+        $record = new PaperRecord([
+            'type' => $this->type,
+            'total_count' => $ids->count(),
+            'setting' => $setting
+        ]);
+        $record->user()->associate(Auth::user());
+        $record->subject()->associate($this->subject);
+        $record->paper()->associate($this);
+        $record->save();
+
+        return $record;
     }
 }

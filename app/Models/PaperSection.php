@@ -23,4 +23,9 @@ class PaperSection extends Model
     {
         return $this->belongsTo(Paper::class, 'paper_id');
     }
+
+    public function items()
+    {
+        return $this->hasMany(PaperItem::class, 'section_id');
+    }
 }

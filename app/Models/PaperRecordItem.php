@@ -20,4 +20,9 @@ class PaperRecordItem extends Model
         'is_right',
         'score',
     ];
+
+    public function record()
+    {
+        return $this->belongsTo(PaperRecord::class, 'record_id');
+    }
 }

@@ -20,6 +20,10 @@ class PaperItem extends Model
         'index',
     ];
 
+    protected $with = [
+        'question'
+    ];
+
     public function paper()
     {
         return $this->belongsTo(Paper::class, 'paper_id');

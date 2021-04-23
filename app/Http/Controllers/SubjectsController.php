@@ -40,28 +40,26 @@ class SubjectsController extends Controller
 
         switch ($paperType) {
             case Paper::TYPE_CHAPTER:
-                $papers = $subject->chapterPapers()
+                $query = $subject->chapterPapers()
                     ->with('children')
-                    ->whereNull('parent_id')
-                    ->status()
-                    ->orderIndex()
-                    ->latest()
-                    ->get();
+                    ->whereNull('parent_id');
                 break;
             case Paper::TYPE_MOCK:
-                $papers = $subject->mockPapers;
+                $query = $subject->mockPapers();
                 break;
             case Paper::TYPE_OLD:
-                $papers = $subject->oldPapers;
+                $query = $subject->oldPapers();
                 break;
             case Paper::TYPE_DAILY:
-                $papers = $subject->dailyPapers()
-                    ->with('topThreeItems')
-                    ->latest()
-                    ->get();
-
+                $query = $subject->dailyPapers()
+                    ->with('topThreeItems');
                 break;
         }
+
+        $papers = $query->status()
+            ->orderIndex()
+            ->latest()
+            ->get();
 
         return view('subjects.show', compact('treeSubjects', 'parentSubject', 'subject', 'paperTypeMap', 'paperType', 'papers'));
     }

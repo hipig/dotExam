@@ -63,4 +63,9 @@ class Question extends Model
     {
         return in_array($this->type, self::$needDecodeTypeMap) ? json_decode($value) : $value;
     }
+
+    public function getAnswerTextAttribute($value)
+    {
+        return in_array($this->type, self::$needDecodeTypeMap) ? implode(', ', $this->answer) : $this->answer;
+    }
 }

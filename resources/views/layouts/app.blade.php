@@ -2,10 +2,14 @@
 
 @section('body')
   <div id="app" class="flex flex-col min-h-screen">
-    @include('partials.header')
+    @section('header')
+      @include('partials.header')
+    @show
     <div class="flex-1">
       @yield('content')
     </div>
-    @include('partials.footer')
+    @section('footer')
+      @include('partials.footer')
+    @show
   </div>
 @endsection
