@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Paper;
 use App\Models\PaperRecord;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class PaperRecordsController extends Controller
 {
@@ -31,8 +32,16 @@ class PaperRecordsController extends Controller
             'subject.parent',
             'paper',
         ]);
+        $paperItems = $record->paper_items->map(function ($item) use ($record) {
+            $item->record = $item->recordItems()
+                ->where('user_id', Auth::id())
+                ->where('record_id', $record->id)
+                ->first();
+
+            return $item;
+        });
         $paperType = Paper::$typeMap[$record->type];
 
-        return view('records.'. $record->mode, compact('record', 'paperType'));
+        return view('records.'. $record->mode, compact('record', 'paperItems', 'paperType'));
     }
 }

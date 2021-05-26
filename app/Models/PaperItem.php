@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 
 class PaperItem extends Model
 {
@@ -37,5 +38,18 @@ class PaperItem extends Model
     public function question()
     {
         return $this->belongsTo(Question::class, 'question_id');
+    }
+
+    public function recordItems()
+    {
+        return $this->hasMany(PaperRecordItem::class, 'paper_item_id');
+    }
+
+    public function getRecord(PaperRecord $record)
+    {
+        return $this->recordItems()
+            ->where('user_id', Auth::id())
+            ->where('record_id', $record->id)
+            ->first();
     }
 }

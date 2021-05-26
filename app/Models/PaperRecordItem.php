@@ -36,6 +36,10 @@ class PaperRecordItem extends Model
         'check_remark',
     ];
 
+    protected $appends = [
+        'answer_text',
+    ];
+
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id');
@@ -73,12 +77,12 @@ class PaperRecordItem extends Model
 
     public function getAnswerAttribute($value)
     {
-        return in_array($this->type, Question::$needDecodeTypeMap) ? json_decode($value) : $value;
+        return in_array($this->question_type, Question::$needDecodeTypeMap) ? json_decode($value) : $value;
     }
 
     public function getAnswerTextAttribute($value)
     {
-        return in_array($this->type, Question::$needDecodeTypeMap) ? implode(', ', $this->answer) : $this->answer;
+        return in_array($this->question_type, Question::$needDecodeTypeMap) ? implode(', ', $this->answer) : $this->answer;
     }
 
     public static function checkAnswer($answer, $correctAnswer, $type)

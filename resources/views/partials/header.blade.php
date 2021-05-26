@@ -22,19 +22,19 @@
         </a>
       @else
         <div x-data="{ open: false }" class="relative" x-cloak>
-          <button x-on:click="open = !open" type="button" class="rounded-full shadow-sm font-semibold focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+          <button x-on:click="open = !open" type="button" class="rounded-full shadow-sm font-semibold focus:outline-none focus:ring focus:ring-indigo-500 focus:ring-opacity-25">
             <img src="{{ \Auth::user()->avatar }}" alt="{{ \Auth::user()->name }}" class="w-8 h-8 object-cover rounded-full">
           </button>
           <div
             x-show="open"
-            x-transition:enter="transition ease-out duration-100"
-            x-transition:enter-start="opacity-0 transform scale-95"
-            x-transition:enter-end="opacity-100 transform scale-100"
-            x-transition:leave="transition ease-in duration-75"
-            x-transition:leave-start="opacity-100 transform scale-100"
-            x-transition:leave-end="opacity-0 transform scale-95"
+            x-transition:enter="transition ease-out duration-150"
+            x-transition:enter-start="transform opacity-0 scale-75"
+            x-transition:enter-end="transform opacity-100 scale-100"
+            x-transition:leave="transition ease-in duration-100"
+            x-transition:leave-start="transform opacity-100 scale-100"
+            x-transition:leave-end="transform opacity-0 scale-75"
             @click.away="open = false"
-            class="absolute top-full right-0 z-20 mt-2"
+            class="absolute right-0 origin-top-right mt-2 z-1"
           >
             <div class="w-48 shadow-lg overflow-hidden rounded-lg py-0.5 bg-white ring-1 ring-gray-400 ring-opacity-5 divide-y divide-gray-100">
               <div class="py-1">
