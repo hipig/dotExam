@@ -1,6 +1,6 @@
 <div x-data="{show: false}"
     x-show="show"
-    @choose-subject.window="open = !!$event.detail"
+    @choose-subject.window="show = !!$event.detail"
     x-transition:enter="transition ease-out duration-200"
     x-transition:enter-start="transform opacity-0"
     x-transition:enter-end="transform opacity-100"
