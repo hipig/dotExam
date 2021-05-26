@@ -4,7 +4,7 @@
 @section('content')
   <div class="py-5 px-4" x-data="recordContainer()" x-cloak>
     <div class="max-w-6xl mx-auto">
-      <div class="flex flex-col">
+      <div class="flex flex-col space-y-2 pb-20">
         <div class="flex items-center text-sm">
           <a href="{{ route('home') }}">首页</a>
           <x-heroicon-o-chevron-right class="w-4 h-4"></x-heroicon-o-chevron-right>
@@ -14,7 +14,7 @@
           <x-heroicon-o-chevron-right class="w-4 h-4"></x-heroicon-o-chevron-right>
           <span class="text-gray-400">练习模式</span>
         </div>
-        <div class="mt-5 flex flex-wrap -mx-3">
+        <div class="flex flex-wrap -mx-3">
           <div class="w-2/3 px-3 space-y-5">
             <div class="bg-white shadow rounded-lg">
               <div class="flex flex-col p-5">
@@ -34,7 +34,7 @@
             </div>
             @foreach($paperItems as $item)
               <div class="bg-white shadow rounded-lg px-10 py-5" x-show="activeIndex == {{ $loop->index }}">
-                <div class="space-y-5" x-data="itemContainer()" x-init="() => { init({{ $item->record ?? false }}) }" x-cloak>
+                <div class="space-y-5" x-data="itemContainer()" x-init="() => { initRecord({{ $item->record ?? false }}) }" x-cloak>
                   <div class="flex items-center justify-between">
                     <div class="flex items-start">
                       <div class="text-gray-400 text-2xl font-semibold">{{ ($loop->iteration < 10 ? '0' : '') . $loop->iteration }}</div>
@@ -47,14 +47,13 @@
                     @case(\App\Models\Question::JUDGE_SELECT)
                       <div class="flex flex-col space-y-2.5">
                         @foreach($item->question->option as $key => $label)
-                          <label class="inline-flex items-center" :class="[isAnswered ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer']">
+                          <label class="inline-flex items-center" :class="[isAnswered || showAnswer ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer']">
                             <input type="radio"
-                                   name="answer"
                                    value="{{ $key }}"
                                    x-model="selfAnswer"
                                    class="w-5 h-5 border-2 border-gray-300"
-                                   :class="[isAnswered ? (isRight ? 'text-green-500 focus:shadow-outline-green' : 'text-red-500 focus:shadow-outline-red') : 'text-indigo-500 focus:ring-indigo-500']"
-                                   :disabled="isAnswered"
+                                   :class="[isAnswered ? (isRight ? 'text-green-500 focus:shadow-outline-green' : 'text-red-500 focus:shadow-outline-red') : 'text-indigo-500 focus:shadow-outline-indigo']"
+                                   :disabled="isAnswered || showAnswer"
                                    x-on:change="submit('{{ route('paperRecords.items.store', ['record' => $record, 'paperItem' => $item]) }}')">
                             <span class="ml-3">{{ $label }}</span>
                           </label>
@@ -64,14 +63,14 @@
                     @case(\App\Models\Question::MULTI_SELECT)
                       <div class="flex flex-col space-y-2.5">
                         @foreach($item->question->option as $key => $label)
-                          <label class="inline-flex items-center" :class="[isAnswered ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer']">
+                          <label class="inline-flex items-center" :class="[isAnswered || showAnswer ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer']">
                             <input type="checkbox"
                                  name="answer"
                                  value="{{ $key }}"
                                  x-model="selfAnswer"
                                  class="w-5 h-5 rounded border-2 border-gray-300"
-                                 :class="[isAnswered ? (isRight ? 'text-green-500 focus:shadow-outline-green' : 'text-red-500 focus:shadow-outline-red') : 'text-indigo-500 focus:ring-indigo-500']"
-                                 :disabled="isAnswered">
+                                 :class="[isAnswered ? (isRight ? 'text-green-500 focus:shadow-outline-green' : 'text-red-500 focus:shadow-outline-red') : 'text-indigo-500 focus:shadow-outline-indigo']"
+                                 :disabled="isAnswered || showAnswer">
                             <span class="ml-3">{{ $label }}</span>
                           </label>
                         @endforeach
@@ -80,25 +79,25 @@
                     @case(\App\Models\Question::FILL_BLANK)
                       <div class="flex flex-col space-y-3">
                         @foreach($item->question->answer as $key => $answer)
-                          <label class="flex items-center" :class="[isAnswered ? 'opacity-50 cursor-not-allowed' : '']">
+                          <label class="flex items-center" :class="[isAnswered || showAnswer ? 'opacity-50 cursor-not-allowed' : '']">
                             <input type="text"
                                    :value="selfAnswer[{{ $key }}] || ''"
                                    class="w-full rounded-md leading-snug"
                                    :class="[isAnswered ? (isRight ? 'focus:ring-green-500 focus:border-green-500 border-green-500 bg-green-100' : 'focus:ring-red-500 focus:border-red-500 border-red-500 bg-red-100') : 'focus:ring-indigo-500 focus:border-indigo-500 border-gray-300']"
                                    :placeholder="isAnswered ? '未填写' : '请输入答案'"
                                    x-on:input="fillAnswer($event.target.value, {{ $key }})"
-                                   :disabled="isAnswered">
+                                   :disabled="isAnswered || showAnswer">
                           </label>
                         @endforeach
                       </div>
                     @break
                     @case(\App\Models\Question::SHORT_ANSWER)
-                      <label class="flex items-center" :class="[isAnswered ? 'opacity-50 cursor-not-allowed' : '']">
+                      <label class="flex items-center" :class="[isAnswered || showAnswer ? 'opacity-50 cursor-not-allowed' : '']">
                         <textarea x-model="selfAnswer"
                                   class="h-24 w-full rounded-md leading-snug resize-none focus:ring-indigo-500 focus:border-indigo-500 border-gray-300"
-                                  :class="[isAnswered ? 'opacity-50 cursor-not-allowed' : '']"
+                                  :class="[isAnswered || showAnswer ? 'opacity-50 cursor-not-allowed' : '']"
                                   :placeholder="isAnswered ? '未填写' : '请输入答案'"
-                                  :disabled="isAnswered"></textarea>
+                                  :disabled="isAnswered || showAnswer"></textarea>
                       </label>
                       <div class="mt-2 text-gray-400">此类型的题目暂不支持判断对错，你可以点击下方查看答案解析</div>
                     @break
@@ -107,16 +106,16 @@
                     @case(\App\Models\Question::MULTI_SELECT)
                     @case(\App\Models\Question::FILL_BLANK)
                     @case(\App\Models\Question::SHORT_ANSWER)
-                      <button type="button" class="inline-flex items-center justify-center px-5 py-1.5 leading-snug border border-indigo-500 text-indigo-500 rounded-md shadow-sm bg-transparent focus:outline-none" :class="[showAnswer && 'opacity-50 cursor-not-allowed']" :disabled="showAnswer" @click="submit('{{ route('paperRecords.items.store', ['record' => $record, 'paperItem' => $item]) }}')">确认</button>
+                      <button type="button" class="inline-flex items-center justify-center px-5 py-1.5 leading-snug border border-indigo-500 text-indigo-500 rounded-md shadow-sm bg-transparent focus:outline-none" :class="[isAnswered || showAnswer ? 'opacity-50 cursor-not-allowed' : '']" :disabled="isAnswered || showAnswer" @click="submit('{{ route('paperRecords.items.store', ['record' => $record, 'paperItem' => $item]) }}')">确认</button>
                     @break
                   @endswitch
-                  <div class="flex flex-col space-y-2">
-                    <button type="button" class="flex items-center cursor-pointer py-1 focus:outline-none" x-on:click="showAnswer = !showAnswer">
+                  <div class="space-y-2">
+                    <button type="button" class="inline-flex items-center cursor-pointer py-1 focus:outline-none" x-on:click="toggleAnswerPanel">
                       <x-heroicon-o-eye class="w-6 h-6 text-gray-400 mr-1" x-show="!showAnswer"></x-heroicon-o-eye>
                       <x-heroicon-o-eye-off class="w-6 h-6 text-gray-400 mr-1" x-show="showAnswer"></x-heroicon-o-eye-off>
                       <span class="text-gray-900 leading-none" x-text="showAnswer ? '隐藏答案' : '查看答案'"></span>
                     </button>
-                    <div x-show="showAnswer">
+                    <div x-show="showAnswer" class="flex flex-col">
                       <template x-if="{{ $item->question_type }} != {{ \App\Models\Question::SHORT_ANSWER }}">
                         <div class="mb-5 py-2 px-5 bg-gray-100 flex leading-tight rounded {{ $item->question_type ? 'flex-col' : 'flex-wrap items-center' }}">
                           <div class="mr-10 py-1" :class="isRight ? 'font-semibold text-green-500' : 'font-semibold text-red-500'" x-show="isAnswered" x-text="isRight ? '回答正确': '回答错误'"></div>
@@ -147,8 +146,8 @@
             @endforeach
           </div>
           <div class="w-1/3 px-3 space-y-5">
-            <div class="bg-white shadow rounded-lg">
-              <div class="px-5 py-3 border-b border-gray-100 text-base text-gray-900 font-semibold">答题卡</div>
+            <div class="bg-white shadow rounded-lg divide-y divide-gray-100">
+              <div class="px-5 py-3 text-base text-gray-900 font-semibold">答题卡</div>
               <div class="px-5 py-4 h-36 overflow-y-auto">
                 <div class="flex flex-wrap -mx-1 -mb-2">
                   @foreach($record->paper_items as $item)
@@ -156,6 +155,19 @@
                       :class="[activeIndex == {{ $loop->index }} ? 'border-indigo-500' : '']"
                       x-on:click="activeIndex = {{ $loop->index }}">{{ $loop->iteration }}</div>
                   @endforeach
+                </div>
+              </div>
+              <div class="px-5 py-3 flex justify-around items-center">
+                <div class="flex items-center">
+                  <div class="bg-green-500 w-4 h-4 mr-1"></div>
+                  <div class="leading-none">正确 <span class="text-gray-900">0</span></div>
+                </div>
+                <div class="flex items-center">
+                  <div class="bg-red-500 w-4 h-4 mr-1"></div>
+                  <div class="leading-none">错误  <span class="text-gray-900">0</span></div>
+                </div>
+                <div class="flex items-center">
+                  <div class="leading-none">正确率 <span class="text-green-500">0%</span></div>
                 </div>
               </div>
             </div>
@@ -206,7 +218,7 @@
         selfAnswer: [],
         selfAnswerText: null,
 
-        init(record) {
+        initRecord(record) {
           if(record) {
             this.isAnswered = true
             this.showAnswer = true
@@ -217,6 +229,11 @@
         },
         fillAnswer(value, i) {
           this.selfAnswer[i] = value
+        },
+        toggleAnswerPanel() {
+          console.log(this.selfAnswer)
+          this.showAnswer = !this.showAnswer
+          console.log(this.showAnswer)
         },
         submit(url) {
           this.isAnswered = true
