@@ -2,7 +2,12 @@
 @section('title', $record->paper->title)
 
 @section('content')
-  <div class="py-5 px-4" x-data="recordContainer()" x-cloak>
+  <div class="py-5 px-4"
+       x-data="recordContainer()"
+       @init-answer-list.window="initAnswerList($event.detail)"
+       @update-answer.window="updateAnswer($event.detail)"
+       @update-answer-card.window="updateAnswerCard()"
+       x-cloak>
     <div class="max-w-6xl mx-auto">
       <div class="flex flex-col space-y-2 pb-20">
         <div class="flex items-center text-sm">
@@ -34,7 +39,7 @@
             </div>
             @foreach($paperItems as $item)
               <div class="bg-white shadow rounded-lg px-10 py-5" x-show="activeIndex == {{ $loop->index }}">
-                <div class="space-y-5" x-data="itemContainer()" x-init="() => { initRecord({{ $item->record ?? false }}) }" x-cloak>
+                <div class="space-y-5" x-data="itemContainer()" x-init="() => { initRecord($dispatch, {{ $loop->index }}, {{ $item->id }}, {{ $item->record ?? null }}) }" x-cloak>
                   <div class="flex items-center justify-between">
                     <div class="flex items-start">
                       <div class="text-gray-400 text-2xl font-semibold">{{ ($loop->iteration < 10 ? '0' : '') . $loop->iteration }}</div>
@@ -52,7 +57,7 @@
                                    value="{{ $key }}"
                                    x-model="selfAnswer"
                                    class="w-5 h-5 border-2 border-gray-300"
-                                   :class="[isAnswered ? (isRight ? 'text-green-500 focus:shadow-outline-green' : 'text-red-500 focus:shadow-outline-red') : 'text-indigo-500 focus:shadow-outline-indigo']"
+                                   :class="[isAnswered ? (isRight ? 'text-green-500 focus:shadow-outline-green' : 'text-red-500 focus:shadow-outline-red') : 'text-indigo-500 focus:ring-indigo-500']"
                                    :disabled="isAnswered || showAnswer"
                                    x-on:change="submit('{{ route('paperRecords.items.store', ['record' => $record, 'paperItem' => $item]) }}')">
                             <span class="ml-3">{{ $label }}</span>
@@ -69,7 +74,7 @@
                                  value="{{ $key }}"
                                  x-model="selfAnswer"
                                  class="w-5 h-5 rounded border-2 border-gray-300"
-                                 :class="[isAnswered ? (isRight ? 'text-green-500 focus:shadow-outline-green' : 'text-red-500 focus:shadow-outline-red') : 'text-indigo-500 focus:shadow-outline-indigo']"
+                                 :class="[isAnswered ? (isRight ? 'text-green-500 focus:shadow-outline-green' : 'text-red-500 focus:shadow-outline-red') : 'text-indigo-500 focus:ring-indigo-500']"
                                  :disabled="isAnswered || showAnswer">
                             <span class="ml-3">{{ $label }}</span>
                           </label>
@@ -151,8 +156,8 @@
               <div class="px-5 py-4 h-36 overflow-y-auto">
                 <div class="flex flex-wrap -mx-1 -mb-2">
                   @foreach($record->paper_items as $item)
-                    <div class="w-6 h-6 mx-1 mb-2 leading-none flex items-center justify-center border text-xs rounded-sm cursor-pointer text-gray-500 hover:border-indigo-500"
-                      :class="[activeIndex == {{ $loop->index }} ? 'border-indigo-500' : '']"
+                    <div class="w-6 h-6 mx-1 mb-2 leading-none flex items-center justify-center border text-xs rounded-sm cursor-pointer"
+                      :class="[answerList[{{ $loop->index }}].answer.length > 0 ? (answerList[{{ $loop->index }}].is_right ? 'text-white bg-green-500 border-green-500 hover:border-green-500' : 'text-white bg-red-500 border-red-500 hover:border-red-500') : (activeIndex == {{ $loop->index }} ? 'text-gray-500 border-indigo-500 hover:border-indigo-500' : 'text-gray-500 hover:border-indigo-500')]"
                       x-on:click="activeIndex = {{ $loop->index }}">{{ $loop->iteration }}</div>
                   @endforeach
                 </div>
@@ -160,14 +165,14 @@
               <div class="px-5 py-3 flex justify-around items-center">
                 <div class="flex items-center">
                   <div class="bg-green-500 w-4 h-4 mr-1"></div>
-                  <div class="leading-none">正确 <span class="text-gray-900">0</span></div>
+                  <div class="leading-none">正确 <span class="text-gray-900" x-text="rightCount"></span></div>
                 </div>
                 <div class="flex items-center">
                   <div class="bg-red-500 w-4 h-4 mr-1"></div>
-                  <div class="leading-none">错误  <span class="text-gray-900">0</span></div>
+                  <div class="leading-none">错误  <span class="text-gray-900" x-text="errorCount"></span></div>
                 </div>
                 <div class="flex items-center">
-                  <div class="leading-none">正确率 <span class="text-green-500">0%</span></div>
+                  <div class="leading-none">正确率 <span class="text-green-500" x-text="rightRate"></span></div>
                 </div>
               </div>
             </div>
@@ -200,6 +205,33 @@
       return {
         activeIndex: 0,
         lastIndex: {{ $record->paper_items->count() - 1 }},
+        answerList: [],
+        rightCount: 0,
+        errorCount: 0,
+        rightRate: '0%',
+
+        initAnswerList(detail) {
+          this.answerList[detail.index] = {
+            paper_item_id: detail.paper_item_id,
+            answer: detail.answer,
+            is_right: detail.is_right
+          }
+        },
+        updateAnswer(detail) {
+          this.answerList.push(Object.assign({}, this.answerList[this.activeIndex], detail))
+        },
+        updateAnswerCard() {
+          this.rightCount = this.answerList.filter(item => {
+            return item.is_right
+          }).length
+
+          this.errorCount = this.answerList.filter(item => {
+            return item.is_right === false
+          }).length
+
+          let len = this.answerList.length
+          this.rightRate = (len > 0 ? Math.round((this.rightCount / len) * 100) : 0) + '%'
+        },
 
         prevItem() {
           if (this.activeIndex > 0)  this.activeIndex --
@@ -217,8 +249,17 @@
         isRight: false,
         selfAnswer: [],
         selfAnswerText: null,
+        dispatcher: null,
 
-        initRecord(record) {
+        initRecord(dispatcher, index, paperItemId, record) {
+          this.dispatcher = dispatcher
+          this.dispatcher('init-answer-list', {
+            index: index,
+            paper_item_id: paperItemId,
+            answer: (record && record.answer) || '',
+            is_right: record ? record.is_correct == 1 : null,
+          })
+          this.dispatcher('update-answer-card')
           if(record) {
             this.isAnswered = true
             this.showAnswer = true
@@ -231,9 +272,7 @@
           this.selfAnswer[i] = value
         },
         toggleAnswerPanel() {
-          console.log(this.selfAnswer)
           this.showAnswer = !this.showAnswer
-          console.log(this.showAnswer)
         },
         submit(url) {
           this.isAnswered = true
@@ -244,6 +283,12 @@
               .then(res => {
                 this.isRight = res.data.is_correct == 1
                 this.selfAnswerText = res.data.answer_text
+
+                this.dispatcher('update-answer', {
+                  answer: res.dataanswer,
+                  is_right: res.data.is_correct == 1
+                })
+                this.dispatcher('update-answer-card')
               })
           })
         }
