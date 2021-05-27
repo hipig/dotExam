@@ -46,6 +46,20 @@
                       <div class="text-gray-400 text-2xl font-semibold">{{ ($loop->iteration < 10 ? '0' : '') . $loop->iteration }}</div>
                       <div class="text-indigo-500 text-lg ml-3">[{{ \App\Models\Question::$typeMap[$item->question_type] }}]</div>
                     </div>
+                    <div class="flex items-center space-x-5">
+                      <button type="button" class="inline-flex items-center space-x-1 focus:outline-none">
+                        <x-heroicon-o-clipboard-list class="w-6 h-6 opacity-50"></x-heroicon-o-clipboard-list>
+                        <span>纠错</span>
+                      </button>
+                      <button type="button" class="inline-flex items-center space-x-1 focus:outline-none">
+                        <x-heroicon-o-pencil-alt class="w-6 h-6 opacity-50"></x-heroicon-o-pencil-alt>
+                        <span>写笔记</span>
+                      </button>
+                      <button type="button" class="inline-flex items-center space-x-1 focus:outline-none">
+                        <x-heroicon-o-star class="w-6 h-6 opacity-50"></x-heroicon-o-star>
+                        <span>收藏</span>
+                      </button>
+                    </div>
                   </div>
                   <div class="text-gray-900 text-lg">{{ $item->question->title }}</div>
                   @switch($item->question_type)

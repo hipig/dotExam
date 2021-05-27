@@ -41,6 +41,20 @@
                       <div class="text-gray-400 text-2xl font-semibold">{{ ($loop->iteration < 10 ? '0' : '') . $loop->iteration }}</div>
                       <div class="text-indigo-500 text-lg ml-3">[{{ \App\Models\Question::$typeMap[$item->question_type] }}]</div>
                     </div>
+                    <div class="flex items-center space-x-5">
+                      <button type="button" class="inline-flex items-center space-x-1 focus:outline-none">
+                        <x-heroicon-o-clipboard-list class="w-6 h-6 opacity-50"></x-heroicon-o-clipboard-list>
+                        <span>纠错</span>
+                      </button>
+                      <button type="button" class="inline-flex items-center space-x-1 focus:outline-none">
+                        <x-heroicon-o-pencil-alt class="w-6 h-6 opacity-50"></x-heroicon-o-pencil-alt>
+                        <span>写笔记</span>
+                      </button>
+                      <button type="button" class="inline-flex items-center space-x-1 focus:outline-none">
+                        <x-heroicon-o-star class="w-6 h-6 opacity-50"></x-heroicon-o-star>
+                        <span>收藏</span>
+                      </button>
+                    </div>
                   </div>
                   <div class="text-gray-900 text-lg">{{ $item->question->title }}</div>
                   @switch($item->question_type)
@@ -144,7 +158,7 @@
                     </div>
                   </div>
                   <div class="w-1/3 flex items-center py-2 px-4">
-                    <div class="cursor-pointer flex items-center space-x-1" @click="isPause = true">
+                    <div class="cursor-pointer flex items-center space-x-1" x-on:click="isPause = true">
                       <x-heroicon-o-pause class="w-6 h-6 opacity-50"></x-heroicon-o-pause>
                       <span class="text-gray-900">暂停</span>
                     </div>
@@ -152,12 +166,103 @@
                 </div>
                 <div class="flex justify-center py-3 px-5 -mx-2">
                   <div class="w-1/2 px-2 flex justify-center">
-                    <button type="button" class="w-full h-8 flex items-center justify-center border border-indigo-500 bg-indigo-500 text-white rounded focus:outline-none">交卷</button>
+                    <button type="button" class="w-full h-8 flex items-center justify-center border border-indigo-500 bg-indigo-500 text-white rounded focus:outline-none" x-on:click="isSubmit = true">交卷</button>
                   </div>
                 </div>
               </div>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+    <div
+      x-show="isPause"
+      x-transition:enter="transition ease-out duration-200"
+      x-transition:enter-start="transform opacity-0"
+      x-transition:enter-end="transform opacity-100"
+      x-transition:leave="transition ease-in duration-100"
+      x-transition:leave-start="transform opacity-100"
+      x-transition:leave-end="transform opacity-0"
+      class="z-90 fixed inset-0 overflow-y-auto overflow-x-hidden bg-gray-500 bg-opacity-75 p-4 lg:p-8"
+    >
+      <div
+        class="flex flex-col rounded shadow-sm bg-white overflow-hidden w-full max-w-md mx-auto"
+        x-show="isPause"
+        x-transition:enter="transition ease-out duration-200"
+        x-transition:enter-start="transform opacity-0 scale-125"
+        x-transition:enter-end="transform opacity-100 scale-100"
+        x-transition:leave="transition ease-in duration-100"
+        x-transition:leave-start="transform opacity-100 scale-100"
+        x-transition:leave-end="transform opacity-0 scale-125"
+      >
+        <div class="p-5 lg:p-6 flex-grow w-full text-center space-y-1 cursor-pointer" x-on:click="isPause = false">
+          <div class="flex items-center justify-center">
+            <x-heroicon-s-play class="w-20 h-20 text-green-500"></x-heroicon-s-play>
+          </div>
+          <h4 class="text-gray-900 text-xl font-semibold mb-1">
+            点击继续
+          </h4>
+        </div>
+      </div>
+    </div>
+    <div
+      x-show="isSubmit"
+      x-transition:enter="transition ease-out duration-200"
+      x-transition:enter-start="transform opacity-0"
+      x-transition:enter-end="transform opacity-100"
+      x-transition:leave="transition ease-in duration-100"
+      x-transition:leave-start="transform opacity-100"
+      x-transition:leave-end="transform opacity-0"
+      class="z-90 fixed inset-0 overflow-y-auto overflow-x-hidden bg-gray-500 bg-opacity-75 p-4 lg:p-8"
+    >
+      <div
+        class="flex flex-col rounded shadow-sm bg-white overflow-hidden w-full max-w-md mx-auto"
+        x-show="isSubmit"
+        x-transition:enter="transition ease-out duration-200"
+        x-transition:enter-start="transform opacity-0 scale-125"
+        x-transition:enter-end="transform opacity-100 scale-100"
+        x-transition:leave="transition ease-in duration-100"
+        x-transition:leave-start="transform opacity-100 scale-100"
+        x-transition:leave-end="transform opacity-0 scale-125"
+      >
+        <div class="p-5 lg:p-6 flex-grow w-full flex space-x-5">
+          <div class="w-16 h-16 flex-none flex items-center justify-center rounded-full bg-orange-100">
+            <svg class="hi-solid hi-shield-exclamation inline-block w-8 h-8 text-orange-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 1.944A11.954 11.954 0 012.166 5C2.056 5.649 2 6.319 2 7c0 5.225 3.34 9.67 8 11.317C14.66 16.67 18 12.225 18 7c0-.682-.057-1.35-.166-2.001A11.954 11.954 0 0110 1.944zM11 14a1 1 0 11-2 0 1 1 0 012 0zm0-7a1 1 0 10-2 0v3a1 1 0 102 0V7z" clip-rule="evenodd"/></svg>
+          </div>
+          <div>
+            <h4 class="text-gray-800 text-xl font-semibold mb-1">
+              结束作答
+            </h4>
+            <p class="text-gray-600">
+              <template x-if="undoneCount > 0">
+                <span>
+                  你还有 <span class="text-orange-500 font-semibold" x-text="undoneCount"></span> 道题未作答
+                </span>
+              </template>
+              <template x-if="undoneCount == 0">
+                <span>
+                  你已全部作答完毕
+                </span>
+              </template>
+              <span>，是否确认交卷？</span>
+            </p>
+          </div>
+        </div>
+        <div class="py-3 px-5 lg:px-6 w-full bg-gray-50 text-right space-x-1">
+          <button
+            type="button"
+            class="inline-flex justify-center items-center space-x-2 border font-semibold focus:outline-none px-3 py-2 leading-5 text-sm rounded border-transparent text-indigo-600 hover:text-indigo-400 focus:ring focus:ring-indigo-500 focus:ring-opacity-50 active:text-indigo-600"
+            x-on:click="isSubmit = false"
+          >
+            继续做题
+          </button>
+          <button
+            type="button"
+            class="inline-flex justify-center items-center space-x-2 border font-semibold focus:outline-none px-3 py-2 leading-5 text-sm rounded border-indigo-700 bg-indigo-700 text-white hover:text-white hover:bg-indigo-800 hover:border-indigo-800 focus:ring focus:ring-indigo-500 focus:ring-opacity-50 active:bg-indigo-700"
+            x-on:click="isSubmit = false"
+          >
+            我要交卷
+          </button>
         </div>
       </div>
     </div>
@@ -172,6 +277,7 @@
         doneCount: 0,
         undoneCount: 0,
         isPause: false,
+        isSubmit: false,
         doneTime: 0,
         countdownText: '00:00:00',
 
