@@ -38,18 +38,18 @@
           >
             <div class="w-48 shadow-lg overflow-hidden rounded-lg py-0.5 bg-white ring-1 ring-gray-400 ring-opacity-5 divide-y divide-gray-100">
               <div class="py-1">
-                <a href="#" class="flex items-center truncate text-gray-700 hover:bg-gray-100 hover:text-gray-900 block px-4 py-1.5">
-                  <x-heroicon-o-eye class="w-5 h-5 text-gray-400 mr-2"></x-heroicon-o-eye>
+                <a href="#" class="flex items-center truncate space-x-2 text-gray-700 hover:bg-gray-100 hover:text-gray-900 block px-4 py-1.5">
+                  <x-heroicon-s-eye class="w-5 h-5 opacity-50"></x-heroicon-s-eye>
                   <span>学习记录</span>
                 </a>
-                <a href="#" class="flex items-center truncate text-gray-700 hover:bg-gray-100 hover:text-gray-900 block px-4 py-1.5">
-                  <x-heroicon-o-pencil-alt class="w-5 h-5 text-gray-400 mr-2"></x-heroicon-o-pencil-alt>
+                <a href="#" class="flex items-center truncate space-x-2 text-gray-700 hover:bg-gray-100 hover:text-gray-900 block px-4 py-1.5">
+                  <x-heroicon-s-pencil-alt class="w-5 h-5 opacity-50"></x-heroicon-s-pencil-alt>
                   <span>修改资料</span>
                 </a>
               </div>
               <div class="py-1">
-                <a href="javascript:;" class="flex items-center truncate text-gray-700 hover:bg-gray-100 hover:text-gray-900 block px-4 py-1.5" x-on:click.prevent="$refs['logout-form'].submit()">
-                  <x-heroicon-o-logout class="w-5 h-5 text-gray-400 mr-2"></x-heroicon-o-logout>
+                <a href="javascript:;" class="flex items-center truncate space-x-2 text-gray-700 hover:bg-gray-100 hover:text-gray-900 block px-4 py-1.5" x-on:click.prevent="$refs['logout-form'].submit()">
+                  <x-heroicon-s-lock-closed class="w-5 h-5 opacity-50"></x-heroicon-s-lock-closed>
                   <span>退出</span>
                   <form action="{{ route('logout') }}" method="post" x-ref="logout-form">
                     @csrf

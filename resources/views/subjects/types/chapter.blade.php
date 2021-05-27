@@ -1,4 +1,8 @@
-<div class="flex space-x-5 chapter-wrapper" x-data="slidesContainer()" x-init="() => { init() }" x-on:scroll.window="scroll" x-cloak>
+<div class="flex space-x-5 chapter-wrapper"
+     x-data="slidesContainer()"
+     x-init="() => { init() }"
+     x-on:scroll.window="scroll"
+     x-cloak>
   <div class="w-48 relative">
     <div class="bg-white shadow rounded-lg max-h-screen py-5 px-2 sticky top-0">
       <div class="flex flex-col space-y-5">
@@ -68,7 +72,7 @@
   </div>
 </div>
 
-@section('js')
+@push('afterJs')
   <script>
     function slidesContainer() {
       return {
@@ -103,4 +107,4 @@
       }
     }
   </script>
-@endsection
+@endpush

@@ -9,11 +9,11 @@
     <title>@yield('title') - {{ config('app.name') }}</title>
   @else
     <title>{{ config('app.name') }}</title>
-@endif
+  @endif
 
 <!-- Styles -->
   <link rel="stylesheet" href="{{ mix('css/app.css') }}">
-  @yield('css')
+  @stack('css')
 
   <!-- Scripts -->
   <script src="{{ mix('js/app.js') }}" defer></script>
@@ -25,6 +25,6 @@
 
 @yield('body')
 
-@yield('js')
+@stack('afterJs')
 </body>
 </html>

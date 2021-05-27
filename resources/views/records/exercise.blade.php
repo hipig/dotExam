@@ -4,13 +4,14 @@
 @section('content')
   <div class="py-5 px-4"
        x-data="recordContainer()"
+       x-init="() => { init($watch) }"
        @init-answer-list.window="initAnswerList($event.detail)"
        @update-answer.window="updateAnswer($event.detail)"
-       @update-answer-card.window="updateAnswerCard()"
+       @auto-next.window="autoNextItem()"
        x-cloak>
     <div class="max-w-6xl mx-auto">
       <div class="flex flex-col space-y-2 pb-20">
-        <div class="flex items-center text-sm">
+        <div class="flex items-center text-sm space-x-0.5">
           <a href="{{ route('home') }}">首页</a>
           <x-heroicon-o-chevron-right class="w-4 h-4"></x-heroicon-o-chevron-right>
           <span>{{ $record->subject->parent->title }}</span>
@@ -22,16 +23,16 @@
         <div class="flex flex-wrap -mx-3">
           <div class="w-2/3 px-3 space-y-5">
             <div class="bg-white shadow rounded-lg">
-              <div class="flex flex-col p-5">
-                <div class="flex items-center">
+              <div class="flex flex-col p-5 space-y-4">
+                <div class="flex items-center  space-x-3">
                   <div class="text-2xl text-gray-900 leading-none truncate">{{ $record->paper->title }}</div>
-                  <div class="flex-1 ml-3">
+                  <div class="flex-1">
                     <div class="flex justify-center text-base text-indigo-500 border border-indigo-500 rounded-sm w-20">{{ $paperType }}</div>
                   </div>
                 </div>
-                <div class="text-base mt-4">
+                <div class="text-base">
                   <label class="inline-flex items-center">
-                    <input type="checkbox" class="w-5 h-5 rounded text-indigo-500 border-gray-300 focus:ring-indigo-500">
+                    <input type="checkbox" value="1" :checked="autoNext" class="w-5 h-5 rounded text-indigo-500 border-gray-300 focus:ring-indigo-500" x-on:change="switchAutoNext()">
                     <span class="ml-2">做对自动下一题</span>
                   </label>
                 </div>
@@ -39,14 +40,14 @@
             </div>
             @foreach($paperItems as $item)
               <div class="bg-white shadow rounded-lg px-10 py-5" x-show="activeIndex == {{ $loop->index }}">
-                <div class="space-y-5" x-data="itemContainer()" x-init="() => { initRecord($dispatch, {{ $loop->index }}, {{ $item->id }}, {{ $item->record ?? null }}) }" x-cloak>
+                <div class="space-y-5" x-data="itemContainer()" x-init="() => { initRecord($dispatch, {{ $item->id }}, {{ $item->record ?? null }}) }" x-cloak>
                   <div class="flex items-center justify-between">
                     <div class="flex items-start">
                       <div class="text-gray-400 text-2xl font-semibold">{{ ($loop->iteration < 10 ? '0' : '') . $loop->iteration }}</div>
                       <div class="text-indigo-500 text-lg ml-3">[{{ \App\Models\Question::$typeMap[$item->question_type] }}]</div>
                     </div>
                   </div>
-                  <div class="text-gray-900 text-lg">{{$item->question->id}} {{ $item->question->title }}</div>
+                  <div class="text-gray-900 text-lg">{{ $item->question->title }}</div>
                   @switch($item->question_type)
                     @case(\App\Models\Question::SINGLE_SELECT)
                     @case(\App\Models\Question::JUDGE_SELECT)
@@ -156,6 +157,7 @@
               <div class="px-5 py-4 h-36 overflow-y-auto">
                 <div class="flex flex-wrap -mx-1 -mb-2">
                   @foreach($record->paper_items as $item)
+                    <div v-text="answerList[{{ $loop->index }}].answer"></div>
                     <div class="w-6 h-6 mx-1 mb-2 leading-none flex items-center justify-center border text-xs rounded-sm cursor-pointer"
                       :class="[answerList[{{ $loop->index }}].answer.length > 0 ? (answerList[{{ $loop->index }}].is_right ? 'text-white bg-green-500 border-green-500 hover:border-green-500' : 'text-white bg-red-500 border-red-500 hover:border-red-500') : (activeIndex == {{ $loop->index }} ? 'text-gray-500 border-indigo-500 hover:border-indigo-500' : 'text-gray-500 hover:border-indigo-500')]"
                       x-on:click="activeIndex = {{ $loop->index }}">{{ $loop->iteration }}</div>
@@ -189,8 +191,8 @@
     </div>
     <div class="fixed bottom-0 left-0 right-0 px-4 z-30">
       <div class="max-w-6xl mx-auto">
-        <div class="flex">
-          <div class="w-2/3">
+        <div class="flex -mx-3">
+          <div class="w-2/3 px-3">
             <div class="flex justify-between py-3 px-10 bg-white rounded-lg shadow-lg mb-5">
               <button type="button" class="inline-flex items-center px-8 py-2 text-white rounded focus:outline-none" :class="[activeIndex === 0 ? 'bg-gray-400 opacity-50 cursor-not-allowed' : 'bg-indigo-500']" x-on:click="prevItem">上一题</button>
               <button type="button" class="inline-flex items-center px-8 py-2 text-white rounded focus:outline-none" :class="[activeIndex === lastIndex ? 'bg-gray-400 opacity-50 cursor-not-allowed' : 'bg-indigo-500']" x-on:click="nextItem">下一题</button>
@@ -203,6 +205,7 @@
   <script>
     function recordContainer() {
       return {
+        autoNext: !!localStorage.getItem("autoNext") || false,
         activeIndex: 0,
         lastIndex: {{ $record->paper_items->count() - 1 }},
         answerList: [],
@@ -210,26 +213,29 @@
         errorCount: 0,
         rightRate: '0%',
 
+        init(watcher) {
+          watcher('answerList', value => {
+            this.countAnswer(value)
+          })
+        },
+
         initAnswerList(detail) {
-          this.answerList[detail.index] = {
-            paper_item_id: detail.paper_item_id,
-            answer: detail.answer,
-            is_right: detail.is_right
-          }
+          this.answerList = this.answerList.concat(detail)
+          this.countAnswer(this.answerList)
         },
         updateAnswer(detail) {
-          this.answerList.push(Object.assign({}, this.answerList[this.activeIndex], detail))
+          this.answerList[this.activeIndex] = detail
         },
-        updateAnswerCard() {
-          this.rightCount = this.answerList.filter(item => {
+        countAnswer(answerList) {
+          this.rightCount = answerList.filter(item => {
             return item.is_right
           }).length
 
-          this.errorCount = this.answerList.filter(item => {
+          this.errorCount = answerList.filter(item => {
             return item.is_right === false
           }).length
 
-          let len = this.answerList.length
+          let len = answerList.length
           this.rightRate = (len > 0 ? Math.round((this.rightCount / len) * 100) : 0) + '%'
         },
 
@@ -238,6 +244,19 @@
         },
         nextItem() {
           if (this.activeIndex < this.lastIndex)  this.activeIndex ++
+        },
+        autoNextItem() {
+          if(!!this.autoNext) {
+            this.nextItem()
+          }
+        },
+        switchAutoNext() {
+          this.autoNext = !this.autoNext
+          if (this.autoNext) {
+            localStorage.setItem("autoNext", "on")
+          } else {
+            localStorage.removeItem("autoNext")
+          }
         }
       }
     }
@@ -246,20 +265,18 @@
       return {
         showAnswer: false,
         isAnswered: false,
-        isRight: false,
+        isRight: null,
         selfAnswer: [],
         selfAnswerText: null,
         dispatcher: null,
 
-        initRecord(dispatcher, index, paperItemId, record) {
+        initRecord(dispatcher, paperItemId, record) {
           this.dispatcher = dispatcher
-          this.dispatcher('init-answer-list', {
-            index: index,
+          dispatcher('init-answer-list', {
             paper_item_id: paperItemId,
             answer: (record && record.answer) || '',
             is_right: record ? record.is_correct == 1 : null,
           })
-          this.dispatcher('update-answer-card')
           if(record) {
             this.isAnswered = true
             this.showAnswer = true
@@ -285,10 +302,13 @@
                 this.selfAnswerText = res.data.answer_text
 
                 this.dispatcher('update-answer', {
-                  answer: res.dataanswer,
-                  is_right: res.data.is_correct == 1
+                  answer: res.data.answer,
+                  is_right: this.isRight
                 })
-                this.dispatcher('update-answer-card')
+
+                if (this.isRight) {
+                  this.dispatcher('auto-next')
+                }
               })
           })
         }
