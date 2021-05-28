@@ -70,7 +70,7 @@
                                    class="w-5 h-5 border-2 border-gray-300"
                                    :class="[isAnswered ? (isRight ? 'text-green-500 focus:shadow-outline-green' : 'text-red-500 focus:shadow-outline-red') : 'text-indigo-500 focus:ring-indigo-500']"
                                    :disabled="isAnswered || showAnswer"
-                                   x-on:change="submit({{ $loop->parent->index }})">
+                                   x-on:change="submit({{ $loop->parent->index }}, {{ $item->id }})">
                             <span class="ml-3">{{ $label }}</span>
                           </label>
                         @endforeach
@@ -87,7 +87,7 @@
                                  class="w-5 h-5 rounded border-2 border-gray-300"
                                  :class="[isAnswered ? (isRight ? 'text-green-500 focus:shadow-outline-green' : 'text-red-500 focus:shadow-outline-red') : 'text-indigo-500 focus:ring-indigo-500']"
                                  :disabled="isAnswered || showAnswer"
-                                 x-on:change="submit({{ $loop->parent->index }})">
+                                 x-on:change="submit({{ $loop->parent->index }}, {{ $item->id }})">
                             <span class="ml-3">{{ $label }}</span>
                           </label>
                         @endforeach
@@ -104,7 +104,7 @@
                                    :placeholder="isAnswered ? '未填写' : '请输入答案'"
                                    x-on:input="fillAnswer($event.target.value, {{ $key }})"
                                    :disabled="isAnswered || showAnswer"
-                                   x-on:change="submit({{ $loop->parent->index }})">
+                                   x-on:change="submit({{ $loop->parent->index }}, {{ $item->id }})">
                           </label>
                         @endforeach
                       </div>
@@ -116,7 +116,7 @@
                                   :class="[isAnswered || showAnswer ? 'opacity-50 cursor-not-allowed' : '']"
                                   :placeholder="isAnswered ? '未填写' : '请输入答案'"
                                   :disabled="isAnswered || showAnswer"
-                                  x-on:change="submit({{ $loop->index }})"></textarea>
+                                  x-on:change="submit({{ $loop->index }}, {{ $item->id }})"></textarea>
                       </label>
                       <div class="mt-2 text-gray-400">主观题仅提供作答，默认得分，不计入错题集，建议收藏。</div>
                     @break
@@ -183,7 +183,7 @@
       x-transition:leave="transition ease-in duration-100"
       x-transition:leave-start="transform opacity-100"
       x-transition:leave-end="transform opacity-0"
-      class="z-90 fixed inset-0 overflow-y-auto overflow-x-hidden bg-gray-500 bg-opacity-75 p-4 lg:p-8"
+      class="z-10 fixed inset-0 overflow-y-auto overflow-x-hidden bg-gray-500 bg-opacity-75 p-4 lg:p-8"
     >
       <div
         class="flex flex-col rounded shadow-sm bg-white overflow-hidden w-full max-w-md mx-auto"
@@ -213,7 +213,7 @@
       x-transition:leave="transition ease-in duration-100"
       x-transition:leave-start="transform opacity-100"
       x-transition:leave-end="transform opacity-0"
-      class="z-90 fixed inset-0 overflow-y-auto overflow-x-hidden bg-gray-500 bg-opacity-75 p-4 lg:p-8"
+      class="z-10 fixed inset-0 overflow-y-auto overflow-x-hidden bg-gray-500 bg-opacity-75 p-4 lg:p-8"
     >
       <div
         class="flex flex-col rounded shadow-sm bg-white overflow-hidden w-full max-w-md mx-auto"
@@ -259,7 +259,7 @@
           <button
             type="button"
             class="inline-flex justify-center items-center space-x-2 border font-semibold focus:outline-none px-3 py-2 leading-5 text-sm rounded border-indigo-700 bg-indigo-700 text-white hover:text-white hover:bg-indigo-800 hover:border-indigo-800 focus:ring focus:ring-indigo-500 focus:ring-opacity-50 active:bg-indigo-700"
-            x-on:click="isSubmit = false"
+            x-on:click="submitAnswer(`{{ route('paperRecords.items.batchStore', $record) }}`)"
           >
             我要交卷
           </button>
@@ -336,12 +336,24 @@
         },
         countAnswer(answerList) {
           this.doneCount = answerList.filter(item => {
-            return item.is_answered
+            return item.answer.length > 0
           }).length
 
           let len = answerList.length
           this.undoneCount = len - this.doneCount
         },
+        submitAnswer(url) {
+          this.$nextTick(_ => {
+            axios.post(url, {
+              done_time: this.doneTime,
+              items: this.answerList
+            })
+            .then(res => {
+              this.isSubmit = false
+              window.location.href = res.data.result_url
+            })
+          })
+        }
       }
     }
 
@@ -358,8 +370,7 @@
           this.dispatcher = dispatcher
           dispatcher('init-answer-list', {
             paper_item_id: paperItemId,
-            answer: (record && record.answer) || '',
-            is_answered: false
+            answer: (record && record.answer) || ''
           })
           if(record) {
             this.isAnswered = true
@@ -372,11 +383,11 @@
         fillAnswer(value, i) {
           this.selfAnswer[i] = value
         },
-        submit(index) {
+        submit(index, paperItemId) {
           this.dispatcher('update-answer', {
             index: index,
-            answer: this.selfAnswer,
-            is_answered: true
+            paper_item_id: paperItemId,
+            answer: this.selfAnswer
           })
         }
       }

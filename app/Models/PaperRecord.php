@@ -83,11 +83,6 @@ class PaperRecord extends Model
         return $items;
     }
 
-    public function getSettingModeAttribute()
-    {
-        return json_decode($this->setting);
-    }
-
     public function getModeAttribute()
     {
         return $this->setting['mode'] ?? self::MODE_EXERCISE;
@@ -96,5 +91,10 @@ class PaperRecord extends Model
     public function getPaperItemIdsAttribute()
     {
         return $this->setting['paper_items'] ?? [];
+    }
+
+    public function getResultUrlAttribute()
+    {
+        return route('paperRecords.showResult', $this);
     }
 }

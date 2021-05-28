@@ -52,8 +52,12 @@ Route::middleware('auth')->group(function () {
 
     Route::post('papers/{paper}/records', [Controllers\PaperRecordsController::class, 'store'])->name('paperRecords.store');
 
-    Route::get('records/{record}', [Controllers\PaperRecordsController::class, 'show'])->name('paperRecords.show');
+    Route::get('records/{record}/start', [Controllers\PaperRecordsController::class, 'show'])->name('paperRecords.show');
+
+    Route::get('records/{record}/result', [Controllers\PaperRecordsController::class, 'result'])->name('paperRecords.showResult');
 
     Route::post('records/{record}/{paperItem}', [Controllers\PaperRecordItemsController::class, 'store'])->name('paperRecords.items.store');
+
+    Route::post('records/{record}', [Controllers\PaperRecordItemsController::class, 'batchStore'])->name('paperRecords.items.batchStore');
 
 });

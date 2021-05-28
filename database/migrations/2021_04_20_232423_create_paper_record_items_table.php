@@ -27,6 +27,7 @@ class CreatePaperRecordItemsTable extends Migration
             $table->unsignedInteger('score')->default(0)->comment('得分');
             $table->text('check_remark')->nullable()->comment('阅卷备注');
             $table->timestamps();
+            $table->unique(['user_id', 'record_id', 'paper_item_id']);
         });
     }
 

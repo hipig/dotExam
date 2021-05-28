@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 
 class PaperRecordItem extends Model
 {
@@ -83,6 +84,21 @@ class PaperRecordItem extends Model
     public function getAnswerTextAttribute($value)
     {
         return in_array($this->question_type, Question::$needDecodeTypeMap) ? implode(', ', $this->answer) : $this->answer;
+    }
+
+    public function store(PaperRecord $record, PaperItem $paperItem, $answer)
+    {
+        $question = $paperItem->question;
+        $this->user()->associate(Auth::user());
+        $this->record()->associate($record);
+        $this->paperItem()->associate($paperItem);
+        $this->subject()->associate($record->subject);
+        $this->paper()->associate($record->paper);
+        $this->question()->associate($question);
+        $this->question_type = $question->type;
+        $this->answer = $answer;
+        $this->is_correct = PaperRecordItem::checkAnswer($answer, $question->answer, $question->type);
+        $this->save();
     }
 
     public static function checkAnswer($answer, $correctAnswer, $type)

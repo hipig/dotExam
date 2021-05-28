@@ -42,6 +42,11 @@ class PaperRecordsController extends Controller
         });
         $paperType = Paper::$typeMap[$record->type];
 
-        return view('records.'. $record->mode, compact('record', 'paperItems', 'paperType'));
+        return view('records.modes.'. $record->mode, compact('record', 'paperItems', 'paperType'));
+    }
+
+    public function result(Request $request, PaperRecord $record)
+    {
+        return view('records.result', compact('record'));
     }
 }
