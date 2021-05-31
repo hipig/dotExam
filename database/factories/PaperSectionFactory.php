@@ -34,8 +34,8 @@ class PaperSectionFactory extends Factory
         return [
             'subject_id' => $paper->subject_id,
             'paper_id' => $paperId,
-            'title' => $faker->title,
-            'description' => $faker->title,
+            'title' => $faker->text(20),
+            'description' => $faker->text(50),
             'item_score' => $score
         ];
     }

@@ -78,20 +78,17 @@ class PaperRecordItem extends Model
 
     public function getAnswerAttribute($value)
     {
-        return in_array($this->question_type, Question::$needDecodeTypeMap) ? json_decode($value) : $value;
+        return in_array($this->question_type, Question::$needDecodeTypeMap) ? json_decode($value, true) ?? [] : $value;
     }
 
     public function getAnswerTextAttribute($value)
     {
-        return in_array($this->question_type, Question::$needDecodeTypeMap) ? implode(', ', $this->answer) : $this->answer;
+        return in_array($this->question_type, Question::$needDecodeTypeMap) ? implode(', ', $this->answer ?? []) : $this->answer;
     }
 
     public function store(PaperRecord $record, PaperItem $paperItem, $answer)
     {
         $question = $paperItem->question;
-        $this->user()->associate(Auth::user());
-        $this->record()->associate($record);
-        $this->paperItem()->associate($paperItem);
         $this->subject()->associate($record->subject);
         $this->paper()->associate($record->paper);
         $this->question()->associate($question);
@@ -107,7 +104,7 @@ class PaperRecordItem extends Model
         switch ($type) {
             case Question::SINGLE_SELECT:
             case Question::JUDGE_SELECT:
-                $result = hash_equals($answer, $correctAnswer) ? self::CORRECT_TYPE_ALL_RIGHT : self::CORRECT_TYPE_ERROR;
+                $result = hash_equals($answer ?? '', $correctAnswer) ? self::CORRECT_TYPE_ALL_RIGHT : self::CORRECT_TYPE_ERROR;
                 break;
             case Question::MULTI_SELECT:
                 $answerMap = is_array($answer) ? $answer : explode(',', $answer);

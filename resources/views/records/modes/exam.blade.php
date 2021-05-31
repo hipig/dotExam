@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', $record->paper->title)
+@section('title', $paper->title)
 
 @section('content')
   <div class="py-5 px-4"
@@ -17,49 +17,160 @@
           <x-heroicon-o-chevron-right class="w-4 h-4"></x-heroicon-o-chevron-right>
           <span>{{ $record->subject->parent->title }}</span>
           <x-heroicon-o-chevron-right class="w-4 h-4"></x-heroicon-o-chevron-right>
-          <a href="{{ route('subjects.show', ['parentSubject' => $record->subject->parent, 'subject' => $record->subject]) }}">{{ $record->subject->title }}</a>
+          <a href="{{ route('subjects.show', ['parentSubject' => $record->subject->parent, 'subject' => $record->subject, 'paperType' => $record->type]) }}">{{ $record->subject->title }}</a>
           <x-heroicon-o-chevron-right class="w-4 h-4"></x-heroicon-o-chevron-right>
-          <span class="text-gray-400">考试模式</span>
+          <span class="text-gray-400">{{ \App\Models\Paper::$typeMap[$record->type] }}</span>
         </div>
         <div class="flex flex-wrap -mx-3">
           <div class="w-2/3 px-3 space-y-5">
             <div class="bg-white shadow rounded-lg">
-              <div class="flex flex-col p-5">
+              <div class="flex flex-col p-5 space-y-3">
                 <div class="flex items-center space-x-3">
-                  <div class="text-2xl text-gray-900 leading-none truncate">{{ $record->paper->title }}</div>
+                  <div class="text-2xl text-gray-900 leading-none truncate">{{ $paper->title }}</div>
                   <div class="flex-1">
                     <div class="flex justify-center text-base text-indigo-500 border border-indigo-500 rounded-sm w-20">{{ $paperType }}</div>
                   </div>
                 </div>
+                <div class="flex flex-warp items-center text-gray-400 space-x-10">
+                  <span>本卷共 {{ $paper->total_count }} {{ $paper->has_section ? '大' : '小' }}题</span>
+                  <span>总分：{{ $paper->total_score }} 分</span>
+                  <span>时间：{{ $paper->time_limit }} 分钟</span>
+                </div>
               </div>
             </div>
-            @foreach($paperItems as $item)
-              <div class="bg-white shadow rounded-lg px-10 py-5 question-item">
-                <div class="space-y-5" x-data="itemContainer()" x-init="() => { initRecord($dispatch, {{ $item->id }}, {{ $item->record ?? null }}) }" x-cloak>
-                  <div class="flex items-center justify-between">
-                    <div class="flex items-start">
-                      <div class="text-gray-400 text-2xl font-semibold">{{ ($loop->iteration < 10 ? '0' : '') . $loop->iteration }}</div>
-                      <div class="text-indigo-500 text-lg ml-3">[{{ \App\Models\Question::$typeMap[$item->question_type] }}]</div>
-                    </div>
-                    <div class="flex items-center space-x-5">
-                      <button type="button" class="inline-flex items-center space-x-1 focus:outline-none">
-                        <x-heroicon-o-clipboard-list class="w-6 h-6 opacity-50"></x-heroicon-o-clipboard-list>
-                        <span>纠错</span>
-                      </button>
-                      <button type="button" class="inline-flex items-center space-x-1 focus:outline-none">
-                        <x-heroicon-o-pencil-alt class="w-6 h-6 opacity-50"></x-heroicon-o-pencil-alt>
-                        <span>写笔记</span>
-                      </button>
-                      <button type="button" class="inline-flex items-center space-x-1 focus:outline-none">
-                        <x-heroicon-o-star class="w-6 h-6 opacity-50"></x-heroicon-o-star>
-                        <span>收藏</span>
-                      </button>
-                    </div>
+            @if($paper->has_section)
+              <div class="space-y-8">
+                @php
+                  $i = 0;
+                @endphp
+                @foreach($paperItems as $sectionItem)
+                  <div class="space-y-3">
+                    <div class="font-semibold">{{ $sectionItem->long_title }}</div>
+                    @foreach($sectionItem->items as $item)
+                      <div class="bg-white shadow rounded-lg px-10 py-5 question-item">
+                        <div class="space-y-5" x-data="itemContainer()" x-init="() => { initRecord($dispatch, {{ $item->id }}, {{ $item->record ?? null }}) }" x-cloak>
+                          <div class="flex items-center justify-between">
+                            <div class="flex items-start">
+                              <div class="text-gray-400 text-2xl font-semibold">{{ ($loop->iteration < 10 ? '0' : '') . $loop->iteration }}</div>
+                              <div class="text-indigo-500 text-lg ml-3">[{{ \App\Models\Question::$typeMap[$item->question_type] }}]</div>
+                            </div>
+                            <div class="flex items-center space-x-5">
+                              <button type="button" class="inline-flex items-center space-x-1 focus:outline-none">
+                                <x-heroicon-o-clipboard-list class="w-6 h-6 opacity-50"></x-heroicon-o-clipboard-list>
+                                <span>纠错</span>
+                              </button>
+                              <button type="button" class="inline-flex items-center space-x-1 focus:outline-none">
+                                <x-heroicon-o-pencil-alt class="w-6 h-6 opacity-50"></x-heroicon-o-pencil-alt>
+                                <span>写笔记</span>
+                              </button>
+                              <button type="button" class="inline-flex items-center space-x-1 focus:outline-none">
+                                <x-heroicon-o-star class="w-6 h-6 opacity-50"></x-heroicon-o-star>
+                                <span>收藏</span>
+                              </button>
+                            </div>
+                          </div>
+                          <div class="text-gray-900 text-lg">{{ $item->question->title }}</div>
+                          @switch($item->question_type)
+                            @case(\App\Models\Question::SINGLE_SELECT)
+                            @case(\App\Models\Question::JUDGE_SELECT)
+                            <div class="flex flex-col space-y-2.5">
+                              @foreach($item->question->option as $key => $label)
+                                <label class="inline-flex items-center" :class="[isAnswered || showAnswer ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer']">
+                                  <input type="radio"
+                                         name="option-radio-{{ $item->id }}"
+                                         value="{{ $key }}"
+                                         x-model="selfAnswer"
+                                         class="w-5 h-5 border-2 border-gray-300"
+                                         :class="[isAnswered ? (isRight ? 'text-green-500 focus:shadow-outline-green' : 'text-red-500 focus:shadow-outline-red') : 'text-indigo-500 focus:ring-indigo-500']"
+                                         :disabled="isAnswered || showAnswer"
+                                         x-on:change="submit({{ $i }}, {{ $item->id }})">
+                                  <span class="ml-3">{{ $label }}</span>
+                                </label>
+                              @endforeach
+                            </div>
+                            @break
+                            @case(\App\Models\Question::MULTI_SELECT)
+                            <div class="flex flex-col space-y-2.5">
+                              @foreach($item->question->option as $key => $label)
+                                <label class="inline-flex items-center" :class="[isAnswered || showAnswer ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer']">
+                                  <input type="checkbox"
+                                         name="option-checkbox-{{ $item->id }}"
+                                         value="{{ $key }}"
+                                         x-model="selfAnswer"
+                                         class="w-5 h-5 rounded border-2 border-gray-300"
+                                         :class="[isAnswered ? (isRight ? 'text-green-500 focus:shadow-outline-green' : 'text-red-500 focus:shadow-outline-red') : 'text-indigo-500 focus:ring-indigo-500']"
+                                         :disabled="isAnswered || showAnswer"
+                                         x-on:change="submit({{ $i }}, {{ $item->id }})">
+                                  <span class="ml-3">{{ $label }}</span>
+                                </label>
+                              @endforeach
+                            </div>
+                            @break
+                            @case(\App\Models\Question::FILL_BLANK)
+                            <div class="flex flex-col space-y-3">
+                              @foreach($item->question->answer as $key => $answer)
+                                <label class="flex items-center" :class="[isAnswered || showAnswer ? 'opacity-50 cursor-not-allowed' : '']">
+                                  <input type="text"
+                                         :value="(selfAnswer && selfAnswer[{{ $key }}]) || ''"
+                                         class="w-full rounded-md leading-snug"
+                                         :class="[isAnswered ? (isRight ? 'focus:ring-green-500 focus:border-green-500 border-green-500 bg-green-100' : 'focus:ring-red-500 focus:border-red-500 border-red-500 bg-red-100') : 'focus:ring-indigo-500 focus:border-indigo-500 border-gray-300']"
+                                         :placeholder="isAnswered ? '未填写' : '请输入答案'"
+                                         x-on:input="fillAnswer($event.target.value, {{ $key }})"
+                                         :disabled="isAnswered || showAnswer"
+                                         x-on:change="submit({{ $i }}, {{ $item->id }})">
+                                </label>
+                              @endforeach
+                            </div>
+                            @break
+                            @case(\App\Models\Question::SHORT_ANSWER)
+                            <label class="flex items-center" :class="[isAnswered || showAnswer ? 'opacity-50 cursor-not-allowed' : '']">
+                        <textarea x-model="selfAnswer"
+                                  class="h-24 w-full rounded-md leading-snug resize-none focus:ring-indigo-500 focus:border-indigo-500 border-gray-300"
+                                  :class="[isAnswered || showAnswer ? 'opacity-50 cursor-not-allowed' : '']"
+                                  :placeholder="isAnswered ? '未填写' : '请输入答案'"
+                                  :disabled="isAnswered || showAnswer"
+                                  x-on:change="submit({{ $i }}, {{ $item->id }})"></textarea>
+                            </label>
+                            <div class="mt-2 text-gray-400">主观题仅提供作答，默认得分，不计入错题集，建议收藏。</div>
+                            @break
+                          @endswitch
+                        </div>
+                      </div>
+                      @php
+                        $i++;
+                      @endphp
+                    @endforeach
                   </div>
-                  <div class="text-gray-900 text-lg">{{ $item->question->title }}</div>
-                  @switch($item->question_type)
-                    @case(\App\Models\Question::SINGLE_SELECT)
-                    @case(\App\Models\Question::JUDGE_SELECT)
+                @endforeach
+              </div>
+            @else
+              @foreach($paperItems as $item)
+                <div class="bg-white shadow rounded-lg px-10 py-5 question-item">
+                  <div class="space-y-5" x-data="itemContainer()" x-init="() => { initRecord($dispatch, {{ $item->id }}, {{ $item->record ?? null }}) }" x-cloak>
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-start">
+                        <div class="text-gray-400 text-2xl font-semibold">{{ ($loop->iteration < 10 ? '0' : '') . $loop->iteration }}</div>
+                        <div class="text-indigo-500 text-lg ml-3">[{{ \App\Models\Question::$typeMap[$item->question_type] }}]</div>
+                      </div>
+                      <div class="flex items-center space-x-5">
+                        <button type="button" class="inline-flex items-center space-x-1 focus:outline-none">
+                          <x-heroicon-o-clipboard-list class="w-6 h-6 opacity-50"></x-heroicon-o-clipboard-list>
+                          <span>纠错</span>
+                        </button>
+                        <button type="button" class="inline-flex items-center space-x-1 focus:outline-none">
+                          <x-heroicon-o-pencil-alt class="w-6 h-6 opacity-50"></x-heroicon-o-pencil-alt>
+                          <span>写笔记</span>
+                        </button>
+                        <button type="button" class="inline-flex items-center space-x-1 focus:outline-none">
+                          <x-heroicon-o-star class="w-6 h-6 opacity-50"></x-heroicon-o-star>
+                          <span>收藏</span>
+                        </button>
+                      </div>
+                    </div>
+                    <div class="text-gray-900 text-lg">{{ $item->question->title }}</div>
+                    @switch($item->question_type)
+                      @case(\App\Models\Question::SINGLE_SELECT)
+                      @case(\App\Models\Question::JUDGE_SELECT)
                       <div class="flex flex-col space-y-2.5">
                         @foreach($item->question->option as $key => $label)
                           <label class="inline-flex items-center" :class="[isAnswered || showAnswer ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer']">
@@ -75,30 +186,30 @@
                           </label>
                         @endforeach
                       </div>
-                    @break
-                    @case(\App\Models\Question::MULTI_SELECT)
+                      @break
+                      @case(\App\Models\Question::MULTI_SELECT)
                       <div class="flex flex-col space-y-2.5">
                         @foreach($item->question->option as $key => $label)
                           <label class="inline-flex items-center" :class="[isAnswered || showAnswer ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer']">
                             <input type="checkbox"
-                                 name="option-checkbox-{{ $item->id }}"
-                                 value="{{ $key }}"
-                                 x-model="selfAnswer"
-                                 class="w-5 h-5 rounded border-2 border-gray-300"
-                                 :class="[isAnswered ? (isRight ? 'text-green-500 focus:shadow-outline-green' : 'text-red-500 focus:shadow-outline-red') : 'text-indigo-500 focus:ring-indigo-500']"
-                                 :disabled="isAnswered || showAnswer"
-                                 x-on:change="submit({{ $loop->parent->index }}, {{ $item->id }})">
+                                   name="option-checkbox-{{ $item->id }}"
+                                   value="{{ $key }}"
+                                   x-model="selfAnswer"
+                                   class="w-5 h-5 rounded border-2 border-gray-300"
+                                   :class="[isAnswered ? (isRight ? 'text-green-500 focus:shadow-outline-green' : 'text-red-500 focus:shadow-outline-red') : 'text-indigo-500 focus:ring-indigo-500']"
+                                   :disabled="isAnswered || showAnswer"
+                                   x-on:change="submit({{ $loop->parent->index }}, {{ $item->id }})">
                             <span class="ml-3">{{ $label }}</span>
                           </label>
                         @endforeach
                       </div>
-                    @break
-                    @case(\App\Models\Question::FILL_BLANK)
+                      @break
+                      @case(\App\Models\Question::FILL_BLANK)
                       <div class="flex flex-col space-y-3">
                         @foreach($item->question->answer as $key => $answer)
                           <label class="flex items-center" :class="[isAnswered || showAnswer ? 'opacity-50 cursor-not-allowed' : '']">
                             <input type="text"
-                                   :value="selfAnswer[{{ $key }}] || ''"
+                                   :value="(selfAnswer && selfAnswer[{{ $key }}]) || ''"
                                    class="w-full rounded-md leading-snug"
                                    :class="[isAnswered ? (isRight ? 'focus:ring-green-500 focus:border-green-500 border-green-500 bg-green-100' : 'focus:ring-red-500 focus:border-red-500 border-red-500 bg-red-100') : 'focus:ring-indigo-500 focus:border-indigo-500 border-gray-300']"
                                    :placeholder="isAnswered ? '未填写' : '请输入答案'"
@@ -108,8 +219,8 @@
                           </label>
                         @endforeach
                       </div>
-                    @break
-                    @case(\App\Models\Question::SHORT_ANSWER)
+                      @break
+                      @case(\App\Models\Question::SHORT_ANSWER)
                       <label class="flex items-center" :class="[isAnswered || showAnswer ? 'opacity-50 cursor-not-allowed' : '']">
                         <textarea x-model="selfAnswer"
                                   class="h-24 w-full rounded-md leading-snug resize-none focus:ring-indigo-500 focus:border-indigo-500 border-gray-300"
@@ -119,24 +230,49 @@
                                   x-on:change="submit({{ $loop->index }}, {{ $item->id }})"></textarea>
                       </label>
                       <div class="mt-2 text-gray-400">主观题仅提供作答，默认得分，不计入错题集，建议收藏。</div>
-                    @break
-                  @endswitch
+                      @break
+                    @endswitch
+                  </div>
                 </div>
-              </div>
-            @endforeach
+              @endforeach
+            @endif
           </div>
           <div class="w-1/3 px-3 relative">
             <div class="sticky top-0 space-y-5">
               <div class="bg-white shadow rounded-lg divide-y divide-gray-100">
                 <div class="px-5 py-3 text-base text-gray-900 font-semibold">答题卡</div>
-                <div class="px-5 py-4 h-36 overflow-y-auto">
-                  <div class="flex flex-wrap -mx-1 -mb-2">
-                    @foreach($record->paper_items as $item)
-                      <div class="w-6 h-6 mx-1 mb-2 leading-none flex items-center justify-center border text-xs rounded-sm cursor-pointer"
-                           :class="[answerList[{{ $loop->index }}].answer.length > 0 ? 'text-white bg-gray-400 border-gray-400' : (activeIndex == {{ $loop->index }} ? 'text-gray-500 border-indigo-500 hover:border-indigo-500' : 'text-gray-500 hover:border-indigo-500')]"
-                           x-on:click="toIndex({{ $loop->index }})">{{ $loop->iteration }}</div>
-                    @endforeach
-                  </div>
+                <div class="px-5 py-4">
+                  @if($paper->has_section)
+                    <div class="space-y-4">
+                      @php
+                        $i = 0;
+                      @endphp
+                      @foreach($paperItems as $sectionItem)
+                        <div class="space-y-2">
+                          <div class="font-semibold">{{ $sectionItem->short_title }}</div>
+                          <div class="flex flex-wrap -mx-1 -mb-2">
+                            @foreach($sectionItem->items as $item)
+                              <div class="w-6 h-6 mx-1 mb-2 leading-none flex items-center justify-center border text-xs rounded-sm cursor-pointer"
+                                   :class="[answerList[{{ $i }}].answer.length > 0 ? 'text-white bg-gray-400 border-gray-400' : (activeIndex == {{ $i }} ? 'text-gray-500 border-indigo-500 hover:border-indigo-500' : 'text-gray-500 hover:border-indigo-500')]"
+                                   x-on:click="toIndex({{ $i }})">{{ $loop->iteration }}</div>
+                              @php
+                                $i++;
+                              @endphp
+                            @endforeach
+                          </div>
+                        </div>
+                      @endforeach
+                    </div>
+                  @else
+                    <div class="flex flex-wrap -mx-1 -mb-2">
+                      @foreach($record->paper_items as $item)
+                        <div class="w-6 h-6 mx-1 mb-2 leading-none flex items-center justify-center border text-xs rounded-sm cursor-pointer"
+                             :class="[answerList[{{ $loop->index }}].answer.length > 0 ? 'text-white bg-gray-400 border-gray-400' : (activeIndex == {{ $loop->index }} ? 'text-gray-500 border-indigo-500 hover:border-indigo-500' : 'text-gray-500 hover:border-indigo-500')]"
+                             x-on:click="toIndex({{ $loop->index }})">{{ $loop->iteration }}</div>
+                      @endforeach
+                    </div>
+                  @endif
+
                 </div>
                 <div class="px-5 py-3 flex justify-around items-center">
                   <div class="flex items-center">
@@ -165,6 +301,9 @@
                   </div>
                 </div>
                 <div class="flex justify-center py-3 px-5 -mx-2">
+                  <div class="w-1/2 px-2 flex justify-center">
+                    <button type="button" class="w-full h-8 flex items-center justify-center border border-indigo-500 bg-transparent text-indigo-500 rounded focus:outline-none" x-on:click="pauseExam(`{{ route('paperRecords.items.batchStore', $record) }}`)">下次继续</button>
+                  </div>
                   <div class="w-1/2 px-2 flex justify-center">
                     <button type="button" class="w-full h-8 flex items-center justify-center border border-indigo-500 bg-indigo-500 text-white rounded focus:outline-none" x-on:click="isSubmit = true">交卷</button>
                   </div>
@@ -259,7 +398,7 @@
           <button
             type="button"
             class="inline-flex justify-center items-center space-x-2 border font-semibold focus:outline-none px-3 py-2 leading-5 text-sm rounded border-indigo-700 bg-indigo-700 text-white hover:text-white hover:bg-indigo-800 hover:border-indigo-800 focus:ring focus:ring-indigo-500 focus:ring-opacity-50 active:bg-indigo-700"
-            x-on:click="submitAnswer(`{{ route('paperRecords.items.batchStore', $record) }}`)"
+            x-on:click="endExam(`{{ route('paperRecords.items.batchStore', $record) }}`)"
           >
             我要交卷
           </button>
@@ -278,6 +417,7 @@
         undoneCount: 0,
         isPause: false,
         isSubmit: false,
+        totalTime: {{ $record->paper->time_limit * 60 }},
         doneTime: 0,
         countdownText: '00:00:00',
 
@@ -288,10 +428,11 @@
           })
           this.intervalEvent()
           watcher('doneTime', value => {
+            let time = this.totalTime - value
             let arr = [
-              Math.floor(value / 3600),
-              Math.floor(value % 3600 / 60),
-              Math.floor(value % 60)
+              Math.floor(time / 3600),
+              Math.floor(time % 3600 / 60),
+              Math.floor(time % 60)
             ]
             arr = arr.map(v => {
               return v >= 10 ? v : "0" + v
@@ -302,7 +443,7 @@
         },
         intervalEvent() {
           setInterval(_ => {
-            if (!this.isPause) this.doneTime++
+            if (!this.isPause && this.doneTime <= this.totalTime) this.doneTime++
           }, 1000)
         },
         scroll() {
@@ -342,16 +483,26 @@
           let len = answerList.length
           this.undoneCount = len - this.doneCount
         },
-        submitAnswer(url) {
+        pauseExam(url) {
+          this.submitAnswer(url, res => {
+            window.history.back()
+          }, false)
+        },
+        endExam(url) {
+          this.submitAnswer(url, res => {
+            this.isSubmit = false
+            window.location.href = res.data.result_url
+          })
+        },
+        submitAnswer(url, callback =null, isEnd = true) {
           this.$nextTick(_ => {
             axios.post(url, {
               done_time: this.doneTime,
-              is_end: true,
+              is_end: isEnd,
               items: this.answerList
             })
             .then(res => {
-              this.isSubmit = false
-              window.location.href = res.data.result_url
+              callback && callback(res)
             })
           })
         }
@@ -374,8 +525,6 @@
             answer: (record && record.answer) || ''
           })
           if(record) {
-            this.isAnswered = true
-            this.showAnswer = true
             this.isRight = record.is_correct == 1
             this.selfAnswer = record.answer
             this.selfAnswerText = record.answer_text

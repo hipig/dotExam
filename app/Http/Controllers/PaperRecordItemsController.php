@@ -19,7 +19,11 @@ class PaperRecordItemsController extends Controller
     {
         $record->load(['subject', 'paper']);
 
-        $recordItem = new PaperRecordItem();
+        $recordItem = PaperRecordItem::query()->firstOrNew([
+            'user_id' => Auth::id(),
+            'record_id' => $record->id,
+            'paper_item_id' => $paperItem->id,
+        ]);
         $recordItem->store($record, $paperItem, $request->input('answer'));
 
         event(new PaperRecordItemSaved($recordItem));
@@ -35,16 +39,19 @@ class PaperRecordItemsController extends Controller
             $itemsCount = count($items);
 
             $record->load(['subject', 'paper']);
-            $record->total_count = $itemsCount;
             $record->done_count = $itemsCount;
             $record->done_time = $request->input('done_time');
-            $record->is_end = true;
+            $record->is_end = $request->boolean('is_end');
             $record->save();
 
             foreach ($items as $item) {
                 $paperItem = PaperItem::query()->find($item['paper_item_id']);
 
-                $recordItem = new PaperRecordItem();
+                $recordItem = PaperRecordItem::query()->firstOrNew([
+                    'user_id' => Auth::id(),
+                    'record_id' => $record->id,
+                    'paper_item_id' => $item['paper_item_id'],
+                ]);
                 $recordItem->store($record, $paperItem, $item['answer']);
 
                 event(new PaperRecordItemSaved($recordItem));

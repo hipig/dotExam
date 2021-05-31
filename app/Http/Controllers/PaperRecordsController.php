@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Paper;
 use App\Models\PaperRecord;
+use App\Models\Question;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
 class PaperRecordsController extends Controller
 {
@@ -20,6 +22,10 @@ class PaperRecordsController extends Controller
                     $request->mode
                 );
                 break;
+            case Paper::TYPE_MOCK:
+            case Paper::TYPE_OLD:
+                $record = $paper->storeMockOrOldRecord();
+                break;
         }
 
         return redirect()->route('paperRecords.show', $record);
@@ -27,26 +33,35 @@ class PaperRecordsController extends Controller
 
     public function show(Request $request, PaperRecord $record)
     {
+        if ($record->is_end) {
+            throw new AccessDeniedHttpException('考试已结束！禁止访问');
+        }
+
         $record->load([
             'subject',
             'subject.parent',
             'paper',
+            'items',
         ]);
-        $paperItems = $record->paper_items->map(function ($item) use ($record) {
-            $item->record = $item->recordItems()
-                ->where('user_id', Auth::id())
-                ->where('record_id', $record->id)
-                ->first();
-
-            return $item;
-        });
+        $paper = $record->paper;
+        $paperItems = $record->paper_items;
         $paperType = Paper::$typeMap[$record->type];
 
-        return view('records.modes.'. $record->mode, compact('record', 'paperItems', 'paperType'));
+        return view('records.modes.'. $record->mode, compact('record', 'paper', 'paperItems', 'paperType'));
     }
 
     public function result(Request $request, PaperRecord $record)
     {
-        return view('records.result', compact('record'));
+        if (!$record->is_end) {
+            throw new AccessDeniedHttpException('请先交卷再来查看解析！');
+        }
+
+        $paper = $record->paper;
+        $paperType = Paper::$typeMap[$record->type];
+        $result = [];
+        foreach (Question::$typeMap as $key => $type) {
+            $result[$key] = $record->getItemsResult($key);
+        }
+        return view('records.result', compact('record', 'paper', 'paperType', 'result'));
     }
 }

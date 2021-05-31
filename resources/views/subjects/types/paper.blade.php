@@ -9,9 +9,12 @@
         <div class="flex items-center justify-between">
           <div class="text-gray-400">
             <span class="mr-5">总分： {{ $paper->total_score }}分</span>
-            <span>时间：{{ $paper->time_limit }}分</span>
+            <span>时间：{{ $paper->time_limit }}分钟</span>
           </div>
-          <button type="button" class="px-3 h-8 flex items-center justify-center border-2 border-yellow-500 text-yellow-500 bg-yellow-50 rounded focus:outline-none">开始考试</button>
+          <form action="{{ route('paperRecords.store', $paper) }}" method="post">
+            @csrf
+            <button type="submit" class="px-3 py-1 flex items-center justify-center border-2 border-yellow-500 text-yellow-500 bg-yellow-50 rounded focus:outline-none">开始考试</button>
+          </form>
         </div>
       </div>
     </div>

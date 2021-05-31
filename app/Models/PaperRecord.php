@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 
 class PaperRecord extends Model
 {
@@ -61,6 +62,7 @@ class PaperRecord extends Model
 
     public function getPaperItemsAttribute()
     {
+        $this->load('items');
         switch ($this->type) {
             case Paper::TYPE_CHAPTER:
                 $items = PaperItem::query()
@@ -68,12 +70,39 @@ class PaperRecord extends Model
                     ->orderBy('index')
                     ->orderBy('question_type')
                     ->get();
+                $items = $items->map(function ($item) {
+                    $item->record = $this->items
+                        ->where('user_id', Auth::id())
+                        ->where('paper_item_id', $item->id)
+                        ->first();
+
+                    return $item;
+                });
                 break;
             case Paper::TYPE_MOCK:
             case Paper::TYPE_OLD:
-                $items = $this->paper->has_section ?
-                    $this->paper->load('sections.items')->sections :
-                    $this->paper->items;
+                $paper = $this->paper;
+                if ($paper->has_section) {
+                    $sectionItems = $paper->load(['sections.items'])->sections;
+                    $items = $sectionItems->map(function ($sectionItem) {
+                        $sectionItem->items = $sectionItem->items->map(function ($item) {
+                            $item->record = $this->items
+                                ->where('user_id', Auth::id())
+                                ->where('paper_item_id', $item->id)
+                                ->first();
+                            return $item;
+                        });
+                        return $sectionItem;
+                    });
+                } else {
+                    $items = $paper->items->map(function ($item) {
+                        $item->record = $this->items
+                            ->where('user_id', Auth::id())
+                            ->where('paper_item_id', $item->id)
+                            ->first();
+                        return $item;
+                    });
+                }
                 break;
             case Paper::TYPE_DAILY:
                 $items = $this->paper->items;
@@ -96,5 +125,18 @@ class PaperRecord extends Model
     public function getResultUrlAttribute()
     {
         return route('paperRecords.showResult', $this);
+    }
+
+    public function getItemsResult($type = 1)
+    {
+        $query = $this->items()->where('question_type', $type);
+
+        return [
+            'type' => $type,
+            'total' => (clone $query)->count(),
+            'right' => (clone $query)->where('is_correct', PaperRecordItem::CORRECT_TYPE_ALL_RIGHT)->count(),
+            'error' => (clone $query)->where('is_correct', '<>', PaperRecordItem::CORRECT_TYPE_ALL_RIGHT)->count(),
+            'score' => (clone $query)->where('is_correct', PaperRecordItem::CORRECT_TYPE_ALL_RIGHT)->sum('score'),
+        ];
     }
 }

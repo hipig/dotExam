@@ -88,17 +88,17 @@ class Paper extends Model
 
     public function items()
     {
-        return $this->hasMany(PaperItem::class, 'paper_id');
+        return $this->hasMany(PaperItem::class, 'paper_id')->orderBy('index')->orderBy('question_type');
     }
 
     public function childrenItems()
     {
-        return $this->hasManyThrough(PaperItem::class, Paper::class, 'parent_id', 'paper_id');
+        return $this->hasManyThrough(PaperItem::class, Paper::class, 'parent_id', 'paper_id')->orderBy('paper_items.index')->orderBy('paper_items.question_type');
     }
 
     public function topThreeItems()
     {
-        return $this->hasMany(PaperItem::class, 'paper_id')->orderBy('question_type')->limit(3);
+        return $this->hasMany(PaperItem::class, 'paper_id')->orderBy('index')->orderBy('question_type')->limit(3);
     }
 
     public function getHasChildrenAttribute()
@@ -135,7 +135,7 @@ class Paper extends Model
 
     public function storeChapterRecord($range = 'all', $type = 0, $size = 5, $mode = 'exercise')
     {
-        $bankItems = $this->allItems();
+        $paperItems = $this->allItems();
 
         switch ($range) {
             case self::FILTER_TYPE_UNDONE:
@@ -147,10 +147,10 @@ class Paper extends Model
         }
 
         if ($type) {
-            $bankItems->where('paper_items.question_type', $type);
+            $paperItems->where('paper_items.question_type', $type);
         }
 
-        $idPluck = $bankItems->pluck('paper_items.id');
+        $idPluck = $paperItems->pluck('paper_items.id');
         $count = $idPluck->count();
         $ids = $idPluck->random($size >= $count ? $count : $size);
 
@@ -161,8 +161,27 @@ class Paper extends Model
 
         $record = new PaperRecord([
             'type' => $this->type,
-            'total_count' => $ids->count(),
+            'total_count' => $this->total_count,
             'setting' => $setting
+        ]);
+        $record->user()->associate(Auth::user());
+        $record->subject()->associate($this->subject);
+        $record->paper()->associate($this);
+        $record->save();
+
+        return $record;
+    }
+
+    public function storeMockOrOldRecord()
+    {
+        $paperItems = $this->items();
+
+        $record = new PaperRecord([
+            'type' => $this->type,
+            'total_count' => $paperItems->count(),
+            'setting' => [
+                'mode' => 'exam',
+            ],
         ]);
         $record->user()->associate(Auth::user());
         $record->subject()->associate($this->subject);
